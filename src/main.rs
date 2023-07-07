@@ -32,7 +32,7 @@ fn app() -> Html {
         <Global css={include_str!("main.css")} />
         <BrowserRouter>
             <div class={style}>
-                <h2>{"PetoMPP website"}</h2>
+                <h2>{"PetoMPP.NET"}</h2>
             </div>
             <Navbar />
             <Switch<Route> render={switch}/>
