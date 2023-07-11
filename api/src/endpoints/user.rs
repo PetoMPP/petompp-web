@@ -1,5 +1,6 @@
-use std::sync::Mutex;
-
+use super::endpoint::Endpoint;
+use crate::app::Secrets;
+use crate::auth::*;
 use actix_web::{
     web::{self, Data},
     HttpRequest, HttpResponse, Responder,
@@ -7,13 +8,7 @@ use actix_web::{
 use actix_web_httpauth::middleware::HttpAuthentication;
 use serde_derive::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-
-use crate::{
-    auth::{self, AccessLevel, AuthConfig},
-    Secrets,
-};
-
-use super::endpoint::Endpoint;
+use std::sync::Mutex;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserDto {
@@ -88,12 +83,12 @@ impl Endpoint for UserEndpoint {
                 .service(
                     web::scope("")
                         .app_data(Data::new(AuthConfig::new(AccessLevel::Registered)))
-                        .wrap(HttpAuthentication::bearer(auth::validator))
+                        .wrap(HttpAuthentication::bearer(validator))
                         .route("", web::get().to(all))
                         // Protected by authentication (admin access only)
                         .service(
                             web::scope("")
-                                .wrap(HttpAuthentication::bearer(auth::validator))
+                                .wrap(HttpAuthentication::bearer(validator))
                                 .app_data(Data::new(AuthConfig::new(AccessLevel::Admin)))
                                 .route("/{id}/confirm", web::post().to(confirm)),
                         ),
@@ -149,7 +144,7 @@ async fn login(body: web::Json<UserDto>, req: HttpRequest) -> impl Responder {
             return HttpResponse::Unauthorized().body("User not confirmed");
         }
         if existing.password.verify(body.password.clone()) {
-            let Ok(create_token) = auth::create_token(secrets, existing) else {
+            let Ok(create_token) = create_token(secrets, existing) else {
                 return HttpResponse::InternalServerError().body("Failed to create token");
             };
             return HttpResponse::Ok().body(create_token);

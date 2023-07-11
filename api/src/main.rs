@@ -1,25 +1,6 @@
+use actix_web::{App, HttpServer};
+use petompp_web_api::{app::get_api_service, endpoints::user::UserEndpoint};
 use std::{env, io};
-
-use actix_web::{
-    dev::HttpServiceFactory,
-    middleware::Logger,
-    web::{self, Data},
-    App, HttpServer,
-};
-use endpoints::{endpoint::Endpoint, user::UserEndpoint};
-mod auth;
-mod endpoints;
-
-pub struct Secrets {
-    pub api_secret: String,
-}
-
-impl Default for Secrets {
-    fn default() -> Self {
-        let api_secret = env::var("API_SECRET").unwrap_or("shhhdonttellanyoneaboutit".to_string());
-        Self { api_secret }
-    }
-}
 
 #[actix_rt::main]
 async fn main() -> io::Result<()> {
@@ -33,16 +14,4 @@ async fn main() -> io::Result<()> {
         .bind("0.0.0.0:16969")?
         .run()
         .await
-}
-
-fn get_api_service(endpoints: &Vec<impl Endpoint>) -> impl HttpServiceFactory + 'static {
-    let secrets = Data::new(Secrets::default());
-    // Define api scope
-    let mut api_scope = web::scope("/api/v1").app_data(secrets);
-    // Register endpoints
-    for endpoint in endpoints {
-        api_scope = endpoint.register(api_scope);
-    }
-    // Wrap scope with logger
-    api_scope.wrap(Logger::default())
 }
