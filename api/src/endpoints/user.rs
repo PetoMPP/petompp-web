@@ -57,15 +57,13 @@ impl Password {
 
 #[derive(Clone)]
 pub struct UserEndpoint {
-    users: Data<Mutex<Vec<User>>>,
-    user_passwords: Data<Mutex<Vec<(u32, String)>>>,
+    pub users: Data<Mutex<Vec<User>>>,
 }
 
 impl Default for UserEndpoint {
     fn default() -> Self {
         Self {
             users: Data::new(Mutex::new(Vec::new())),
-            user_passwords: Data::new(Default::default()),
         }
     }
 }
@@ -75,7 +73,6 @@ impl Endpoint for UserEndpoint {
         scope.service(
             web::scope("/users")
                 .app_data(self.users.clone())
-                .app_data(self.user_passwords.clone())
                 // Not protected by authentication
                 .route("", web::post().to(register))
                 .route("/login", web::post().to(login))

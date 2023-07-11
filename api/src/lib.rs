@@ -50,7 +50,7 @@ pub mod auth {
 
     use crate::{app::Secrets, endpoints::user::User};
 
-    #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, PartialOrd)]
+    #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, PartialOrd, Sequence)]
     pub enum AccessLevel {
         #[default]
         Registered,
