@@ -2,7 +2,7 @@ use actix_web::{dev::ServiceResponse, http::header::AUTHORIZATION, test, web::Da
 use enum_iterator::all;
 use petompp_web_api::{
     app::{get_api_service, Secrets},
-    auth::{create_token, AccessLevel},
+    auth::validation::{create_token, AccessLevel},
     endpoints::user::{Password, User, UserEndpoint},
 };
 use std::sync::Mutex;
