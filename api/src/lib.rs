@@ -1,3 +1,3 @@
-pub mod endpoints;
-pub mod auth;
 pub mod app;
+pub mod auth;
+pub mod endpoints;

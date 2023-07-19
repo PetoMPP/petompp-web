@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use chrono::Duration;
 
-use super::{validation::AccessLevel, claim::Claim};
+use super::{claim::Claim, validation::AccessLevel};
 
 #[derive(Debug)]
 pub enum AuthError {

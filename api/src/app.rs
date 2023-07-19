@@ -12,8 +12,7 @@ pub struct Secrets {
 
 impl Default for Secrets {
     fn default() -> Self {
-        let api_secret =
-            env::var("API_SECRET").unwrap_or("shhhdonttellanyoneaboutit".to_string());
+        let api_secret = env::var("API_SECRET").unwrap_or("shhhdonttellanyoneaboutit".to_string());
         Self { api_secret }
     }
 }

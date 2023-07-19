@@ -225,7 +225,7 @@ async fn send_get_self_req(secrets: &Data<Secrets>) -> ServiceResponse {
         access_level: AccessLevel::Registered,
         confirmed: true,
     };
-    
+
     let user_endpoint = UserEndpoint {
         users: Data::new(Mutex::new(vec![user.clone()])),
     };
@@ -239,4 +239,3 @@ async fn send_get_self_req(secrets: &Data<Secrets>) -> ServiceResponse {
         .to_request();
     test::call_service(&app, req).await
 }
-
