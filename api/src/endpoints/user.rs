@@ -1,6 +1,11 @@
 use super::endpoint::Endpoint;
-use crate::{app::Secrets, auth::validation::{AccessLevel, AuthConfig, validator, create_token}};
+use crate::{
+    access_validator,
+    app::Secrets,
+    auth::validation::{create_token, AccessLevel},
+};
 use actix_web::{
+    get, post,
     web::{self, Data},
     HttpRequest, HttpResponse, Responder,
 };
@@ -54,6 +59,9 @@ impl Password {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct CurrentUserId(pub u32);
+
 #[derive(Clone)]
 pub struct UserEndpoint {
     pub users: Data<Mutex<Vec<User>>>,
@@ -72,32 +80,60 @@ impl Endpoint for UserEndpoint {
         scope.service(
             web::scope("/users")
                 .app_data(self.users.clone())
-                // Not protected by authentication
-                .route("", web::post().to(register))
-                .route("/login", web::post().to(login))
-                // Protected by authentication
-                .service(
-                    web::scope("")
-                        .app_data(Data::new(AuthConfig::new(AccessLevel::Registered)))
-                        .wrap(HttpAuthentication::bearer(validator))
-                        .route("", web::get().to(all))
-                        // Protected by authentication (admin access only)
-                        .service(
-                            web::scope("")
-                                .wrap(HttpAuthentication::bearer(validator))
-                                .app_data(Data::new(AuthConfig::new(AccessLevel::Admin)))
-                                .route("/{id}/confirm", web::post().to(confirm)),
-                        ),
-                ),
+                .service(get_self)
+                .service(vip)
+                .service(get_users)
+                .service(get_user)
+                .service(register)
+                .service(login)
+                .service(confirm),
         )
     }
 }
 
-async fn all(req: HttpRequest) -> impl Responder {
+#[get("", wrap = "access_validator!(AccessLevel::Registered)")]
+async fn get_self(req: HttpRequest) -> impl Responder {
+    let id = req.app_data::<CurrentUserId>().unwrap().0;
+    return match req
+        .app_data::<Data<Mutex<Vec<User>>>>()
+        .unwrap()
+        .lock()
+        .unwrap()
+        .iter()
+        .find(|u| u.id == id)
+    {
+        Some(user) => HttpResponse::Ok().body(serde_json::to_string(&user).unwrap()),
+        None => HttpResponse::NotFound().body(format!("User with id {} not found", id)),
+    };
+}
+
+#[get("/vip", wrap = "access_validator!(AccessLevel::Vip)")]
+async fn vip() -> impl Responder {
+    HttpResponse::Ok().body("VIP users only ;)")
+}
+
+#[get("/all", wrap = "access_validator!(AccessLevel::Admin)")]
+async fn get_users(req: HttpRequest) -> impl Responder {
     let users = req.app_data::<Data<Mutex<Vec<User>>>>().unwrap().get_ref();
     HttpResponse::Ok().body(serde_json::to_string(&users).unwrap())
 }
 
+#[get("/{id}", wrap = "access_validator!(AccessLevel::Admin)")]
+async fn get_user(id: web::Path<u32>, req: HttpRequest) -> impl Responder {
+    let users = req
+        .app_data::<Data<Mutex<Vec<User>>>>()
+        .unwrap()
+        .lock()
+        .unwrap();
+
+    let user = users.iter().find(|u| u.id == *id);
+    if let Some(user) = user {
+        return HttpResponse::Ok().body(serde_json::to_string(&user).unwrap());
+    }
+    HttpResponse::NotFound().body(format!("User with id {} not found", id))
+}
+
+#[post("")]
 async fn register(body: web::Json<UserDto>, req: HttpRequest) -> impl Responder {
     let mut users = req
         .app_data::<Data<Mutex<Vec<User>>>>()
@@ -127,6 +163,7 @@ async fn register(body: web::Json<UserDto>, req: HttpRequest) -> impl Responder 
     HttpResponse::Ok().body(serde_json::to_string(&new_user).unwrap())
 }
 
+#[post("/login")]
 async fn login(body: web::Json<UserDto>, req: HttpRequest) -> impl Responder {
     let users = req
         .app_data::<Data<Mutex<Vec<User>>>>()
@@ -151,6 +188,7 @@ async fn login(body: web::Json<UserDto>, req: HttpRequest) -> impl Responder {
     HttpResponse::BadRequest().body("User does not exists")
 }
 
+#[post("/{id}/confirm", wrap = "access_validator!(AccessLevel::Admin)")]
 async fn confirm(id: web::Path<u32>, req: HttpRequest) -> impl Responder {
     let mut users = req
         .app_data::<Data<Mutex<Vec<User>>>>()

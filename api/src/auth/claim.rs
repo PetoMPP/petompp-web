@@ -1,13 +1,11 @@
 use std::collections::BTreeMap;
 
-use actix_web::web::Data;
 use chrono::Duration;
 use enum_iterator::Sequence;
 
 use crate::endpoints::user::User;
 
-use super::{validation::{AuthConfig, AccessLevel}, error::AuthError};
-
+use super::{error::AuthError, validation::AccessLevel};
 
 #[derive(Debug, Sequence, Clone, Copy)]
 pub enum Claim {
@@ -27,7 +25,7 @@ impl Claim {
 
     pub fn value(&self, user: &User) -> String {
         match self {
-            Claim::Subject => user.name.clone(),
+            Claim::Subject => user.id.to_string(),
             Claim::Expiration => chrono::Utc::now()
                 .checked_add_signed(Duration::minutes(30))
                 .unwrap()
@@ -40,17 +38,22 @@ impl Claim {
     pub fn validate(
         &self,
         claims: &BTreeMap<String, String>,
-        config: &Data<AuthConfig>,
+        access_level: AccessLevel,
     ) -> Result<(), AuthError> {
         let Some(claim) = claims.get(&self.key().to_string()) else {
         return Err(AuthError::MissingClaim(*self));
     };
-        self.check(claim, config)
+        self.check(claim, access_level)
     }
 
-    fn check(&self, value: &str, config: &Data<AuthConfig>) -> Result<(), AuthError> {
+    fn check(&self, value: &str, access_level: AccessLevel) -> Result<(), AuthError> {
         match self {
-            Claim::Subject => Ok(()),
+            Claim::Subject => {
+                let Ok(_) = value.parse::<u32>() else {
+                return Err(AuthError::InvalidFormat(*self));
+            };
+                Ok(())
+            }
             Claim::Expiration => {
                 let Ok(exp) = value.parse::<i64>() else {
                 return Err(AuthError::InvalidFormat(*self));
@@ -65,8 +68,8 @@ impl Claim {
                 let Ok(level) = serde_json::from_str::<AccessLevel>(value) else {
                 return Err(AuthError::InvalidFormat(*self));
             };
-                if level < config.level {
-                    return Err(AuthError::InsufficientPermissions((level, config.level)));
+                if level < access_level {
+                    return Err(AuthError::InsufficientPermissions((level, access_level)));
                 }
                 Ok(())
             }
