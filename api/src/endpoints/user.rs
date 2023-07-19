@@ -12,7 +12,7 @@ use actix_web::{
 use actix_web_httpauth::middleware::HttpAuthentication;
 use serde_derive::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::sync::Mutex;
+use std::{env, sync::Mutex};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserDto {
@@ -69,8 +69,22 @@ pub struct UserEndpoint {
 
 impl Default for UserEndpoint {
     fn default() -> Self {
+        let mut users = Vec::new();
+        if let Ok(admin) = env::var("DEFAULT_ADMIN") {
+            let parts = admin.split(":").collect::<Vec<&str>>();
+            if parts.len() == 2 {
+                let password = Password::new(parts[1].to_string());
+                users.push(User {
+                    id: 1,
+                    name: parts[0].to_string(),
+                    password,
+                    access_level: AccessLevel::Admin,
+                    confirmed: true,
+                });
+            }
+        }
         Self {
-            users: Data::new(Mutex::new(Vec::new())),
+            users: Data::new(Mutex::new(users)),
         }
     }
 }
