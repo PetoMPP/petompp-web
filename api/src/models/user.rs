@@ -4,7 +4,7 @@ use super::password::Password;
 use serde::{Deserialize, Serialize};
 use strum_macros::{EnumIter, EnumString};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Default)]
 pub struct User {
     pub id: u32,
     pub name: String,
@@ -14,8 +14,9 @@ pub struct User {
     pub confirmed: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, EnumString, EnumIter, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, EnumString, EnumIter, PartialEq, Default)]
 pub enum Role {
+    #[default]
     User,
     Admin,
 }
