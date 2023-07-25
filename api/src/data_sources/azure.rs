@@ -1,4 +1,4 @@
-use super::data_source::{DataSource, UserDataSource};
+use super::data_source::{DataSource, DataSourceError, UserDataSource};
 use crate::models::{credentials::Credentials, user::User};
 use async_std::net::TcpStream;
 use async_trait::async_trait;
@@ -17,22 +17,21 @@ impl From<Client<TcpStream>> for AzureDataSource {
 
 #[async_trait]
 impl DataSource for AzureDataSource {
-    async fn get_version(&mut self) -> Result<String, super::data_source::DataSourceError> {
-        let res: QueryStream = self
-            .client
-            .simple_query("SELECT @@version")
-            .await
-            .map_err(|_| super::data_source::DataSourceError::ConnectionError)?;
-        let row = res.into_row().await.unwrap().unwrap();
-        row.get(0)
+    async fn get_version(&mut self) -> Result<String, DataSourceError> {
+        let res: QueryStream = self.client.simple_query("SELECT @@version").await?;
+
+        res.into_row()
+            .await?
+            .ok_or(DataSourceError::NotFound)?
+            .get(0)
             .map(|sql: &str| sql.to_string())
-            .ok_or(super::data_source::DataSourceError::ConnectionError)
+            .ok_or(DataSourceError::NotFound)
     }
 }
 
 #[async_trait]
 impl UserDataSource for AzureDataSource {
-    async fn get_user_by_id(&self, id: u32) -> Result<User, super::data_source::DataSourceError> {
+    async fn get_user_by_id(&self, id: u32) -> Result<User, DataSourceError> {
         let user = User {
             id: 1,
             name: "Azure User".to_string(),
@@ -40,10 +39,7 @@ impl UserDataSource for AzureDataSource {
         };
         Ok(user)
     }
-    async fn get_user_by_name(
-        &self,
-        name: String,
-    ) -> Result<User, super::data_source::DataSourceError> {
+    async fn get_user_by_name(&self, name: String) -> Result<User, DataSourceError> {
         let user = User {
             id: 1,
             name: "Azure User".to_string(),
@@ -51,7 +47,7 @@ impl UserDataSource for AzureDataSource {
         };
         Ok(user)
     }
-    async fn get_users(&self) -> Result<Vec<User>, super::data_source::DataSourceError> {
+    async fn get_users(&self) -> Result<Vec<User>, DataSourceError> {
         let user = User {
             id: 1,
             name: "Azure User".to_string(),
@@ -59,10 +55,7 @@ impl UserDataSource for AzureDataSource {
         };
         Ok(vec![user])
     }
-    async fn create_user(
-        &self,
-        credentials: &Credentials,
-    ) -> Result<User, super::data_source::DataSourceError> {
+    async fn create_user(&self, credentials: &Credentials) -> Result<User, DataSourceError> {
         let user = User {
             id: 1,
             name: "Azure User".to_string(),
@@ -79,7 +72,7 @@ pub struct AzureDataSourceManager {
 }
 
 impl AzureDataSourceManager {
-    pub fn new() -> Result<Self, super::data_source::DataSourceError> {
+    pub fn new() -> Result<Self, DataSourceError> {
         let host: Vec<&str> = option_env!("DB_HOST").unwrap().split(":").take(2).collect();
         let (host, port) = (host[0], host[1]);
         let database = option_env!("DB_NAME").unwrap();
@@ -95,41 +88,25 @@ impl AzureDataSourceManager {
                 password = password,
             )
             .as_str(),
-        )
-        .map_err(|e| {
-            println!("{}", e);
-            super::data_source::DataSourceError::NotConfigured
-        })?
+        )?
         .into();
 
         Ok(Self { config })
     }
 
-    pub async fn get_data_source(
-        &self,
-    ) -> Result<AzureDataSource, super::data_source::DataSourceError> {
-        let addrs = self.config.get_addr();
-        println!("cfg: {:?}", self.config);
-        println!("Connecting to {}", addrs);
-        let tcp_stream = TcpStream::connect(addrs).await.map_err(|e| {
-            println!("{}", e);
-            super::data_source::DataSourceError::ConnectionError
-        })?;
+    pub async fn get_data_source(&self) -> Result<AzureDataSource, DataSourceError> {
+        let tcp_stream = TcpStream::connect(self.config.get_addr()).await?;
 
-        Client::connect(self.config.clone(), tcp_stream)
-            .await
-            .map(|c| AzureDataSource { client: c })
-            .map_err(|e| {
-                println!("{}", e);
-                super::data_source::DataSourceError::ConnectionError
-            })
+        let client = Client::connect(self.config.clone(), tcp_stream).await?;
+
+        Ok(AzureDataSource { client })
     }
 }
 
 #[async_trait]
 impl Manager for AzureDataSourceManager {
     type Type = AzureDataSource;
-    type Error = super::data_source::DataSourceError;
+    type Error = DataSourceError;
 
     async fn create(&self) -> Result<Self::Type, Self::Error> {
         self.get_data_source().await

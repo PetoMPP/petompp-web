@@ -6,7 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+async-std = "1.12"
+async-trait = "0.1"
 chrono= "0.4"
+deadpool = "0.9"
 hmac = "0.12"
 jwt = "0.16"
 rocket = {version = "0.5.0-rc.3", features = ["json"]}
@@ -14,4 +17,5 @@ serde = { version = "1.0", features = ["derive"] }
 sha2 = "0.10"
 strum = "0.25"
 strum_macros = "0.25"
+tiberius = "0.12"
 urandom = "0.1"
