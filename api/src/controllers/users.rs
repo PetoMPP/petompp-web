@@ -4,18 +4,10 @@ use crate::{
         token::create_token,
     },
     controllers::controller::Controller,
-    models::{
-        credentials::Credentials,
-        password::Password,
-        user::{Role, User},
-    },
+    data_sources::{azure::AzurePool, data_source::UserContext},
+    models::{credentials::Credentials, user::User},
 };
-use rocket::{
-    futures::lock::Mutex, get, http::Status, post, response::status, routes, serde::json::Json,
-    Build, State,
-};
-
-pub struct UserData(pub Mutex<Vec<User>>);
+use rocket::{get, http::Status, post, response::status, routes, serde::json::Json, Build, State};
 
 pub struct UsersController;
 
@@ -29,71 +21,55 @@ impl Controller for UsersController {
     }
 
     fn add_managed(&self, rocket: rocket::Rocket<Build>) -> rocket::Rocket<Build> {
-        rocket.manage(UserData(Mutex::new(vec![User {
-            id: 1,
-            name: "admin".to_string(),
-            password: Password::new("admin".to_string()),
-            role: Role::Admin,
-            confirmed: true,
-        }])))
+        rocket
     }
 }
 
 #[post("/", data = "<credentials>")]
 async fn create(
     credentials: Json<Credentials>,
-    user_data: &State<UserData>,
+    pool: &State<AzurePool>,
 ) -> status::Custom<&'static str> {
-    let mut user_mutex = user_data.0.lock().await;
-    return match user_mutex.iter().find(|user| user.name == credentials.name) {
-        Some(_) => status::Custom(Status::BadRequest, "User already exists!"),
-        None => {
-            let id = user_mutex.len() as u32 + 1;
-            user_mutex.push(User {
-                id,
-                name: credentials.name.clone(),
-                password: Password::new(credentials.password.clone()),
-                role: Role::User,
-                confirmed: false,
-            });
-            status::Custom(Status::Ok, "User created!")
-        }
+    let mut client = pool.get().await.unwrap();
+    return match client.get_user_by_name(credentials.name.clone()).await {
+        Ok(_) => status::Custom(Status::BadRequest, "User already exists!"),
+        Err(_) => match client.create_user(&credentials).await {
+            Ok(_) => status::Custom(Status::Ok, "User created!"),
+            Err(_) => status::Custom(Status::InternalServerError, "Error creating user!"),
+        },
     };
 }
 
 #[post("/login", data = "<credentials>")]
 async fn login(
     credentials: Json<Credentials>,
-    user_data: &State<UserData>,
+    pool: &State<AzurePool>,
     secrets: &State<crate::Secrets>,
 ) -> status::Custom<String> {
-    let user_mutex = user_data.0.lock().await;
-    return match user_mutex.iter().find(|user| user.name == credentials.name) {
-        Some(user) => {
+    let mut client = pool.get().await.unwrap();
+    return match client.get_user_by_name(credentials.name.clone()).await {
+        Ok(user) => {
             if !user.confirmed {
                 return status::Custom(Status::BadRequest, "User not activated!".to_string());
             }
             if !user.password.verify(credentials.password.clone()) {
                 return status::Custom(Status::BadRequest, "Wrong password!".to_string());
             }
-            return match create_token(secrets, user) {
+            return match create_token(secrets, &user) {
                 Ok(token) => status::Custom(Status::Ok, token),
                 Err(e) => status::Custom(Status::InternalServerError, e.to_string()),
             };
         }
-        None => status::Custom(Status::BadRequest, "User does not exist!".to_string()),
+        Err(_) => status::Custom(Status::BadRequest, "User does not exist!".to_string()),
     };
 }
 
 #[get("/")]
-async fn get_self(
-    claims: Claims,
-    user_data: &State<UserData>,
-) -> status::Custom<Option<Json<User>>> {
-    let user_mutex = user_data.0.lock().await;
-    return match user_mutex.iter().find(|u| u.id == claims.sub) {
-        Some(user) => status::Custom(Status::Ok, Some(Json(user.clone()))),
-        None => status::Custom(Status::NotFound, None),
+async fn get_self(claims: Claims, pool: &State<AzurePool>) -> status::Custom<Option<Json<User>>> {
+    let mut client = pool.get().await.unwrap();
+    return match client.get_user_by_id(claims.sub).await {
+        Ok(user) => status::Custom(Status::Ok, Some(Json(user.clone()))),
+        Err(_) => status::Custom(Status::NotFound, None),
     };
 }
 
@@ -101,14 +77,20 @@ async fn get_self(
 async fn activate(
     _claims: AdminClaims,
     id: u32,
-    user_data: &State<UserData>,
+    pool: &State<AzurePool>,
 ) -> status::Custom<&'static str> {
-    let mut user_mutex = user_data.0.lock().await;
-    return match user_mutex.iter_mut().find(|user| user.id == id) {
-        Some(user) => {
-            user.confirmed = true;
-            status::Custom(Status::Ok, "User activated!")
+    let mut client = pool.get().await.unwrap();
+    return match client.get_user_by_id(id).await {
+        Ok(user) => {
+            let user = User {
+                confirmed: true,
+                ..user
+            };
+            match client.update_user(id, &user).await {
+                Ok(_) => status::Custom(Status::Ok, "User activated!"),
+                Err(_) => status::Custom(Status::InternalServerError, "Error activating user!"),
+            }
         }
-        None => status::Custom(Status::NotFound, "User not found!"),
+        Err(_) => status::Custom(Status::NotFound, "User not found!"),
     };
 }

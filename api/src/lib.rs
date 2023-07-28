@@ -1,7 +1,7 @@
 use crate::controllers::controller::ControllerRegisterer;
 use crate::controllers::users::UsersController;
 use crate::extensions::extension::Extension;
-use data_sources::data_source::{DataSource, ManagerConfig, Pool, ConfigData};
+use data_sources::data_source::{ConfigData, DataSource, ManagerConfig, Pool};
 use rocket::{Build, Config, Rocket};
 use std::env;
 
@@ -22,7 +22,11 @@ impl Default for Secrets {
     }
 }
 
-pub fn build_rocket<D: ConfigData + 'static, T: DataSource<D> + 'static, C: ManagerConfig<D> + 'static>(
+pub fn build_rocket<
+    D: ConfigData + 'static,
+    T: DataSource<D> + 'static,
+    C: ManagerConfig<D> + 'static,
+>(
     db_pool: Pool<T, C, D>,
 ) -> Rocket<Build> {
     Extension(rocket::build())

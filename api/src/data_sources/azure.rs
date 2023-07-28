@@ -1,5 +1,5 @@
 use super::data_source::{
-    ConfigData, DataSource, DataSourceError, DataSourceManager, ManagerConfig, UserDataSource,
+    ConfigData, DataSource, DataSourceError, DataSourceManager, ManagerConfig, UserContext, DataContext,
 };
 use crate::{
     extensions::extension::ExtensionCl,
@@ -73,10 +73,13 @@ impl DataSource<ExtensionCl<Config>> for AzureDataSource {
 
         Ok(Self { client })
     }
+}
 
+#[async_trait]
+impl DataContext for AzureDataSource {
     async fn get_version(&mut self) -> Result<String, DataSourceError> {
         let res: QueryStream = self.client.simple_query("SELECT @@version").await?;
-
+    
         res.into_row()
             .await?
             .ok_or(DataSourceError::NotFound)?
@@ -87,8 +90,8 @@ impl DataSource<ExtensionCl<Config>> for AzureDataSource {
 }
 
 #[async_trait]
-impl UserDataSource for AzureDataSource {
-    async fn get_user_by_id(&self, _id: u32) -> Result<User, DataSourceError> {
+impl UserContext for AzureDataSource {
+    async fn get_user_by_id(&mut self, _id: u32) -> Result<User, DataSourceError> {
         let user = User {
             id: 1,
             name: "Azure User".to_string(),
@@ -96,7 +99,7 @@ impl UserDataSource for AzureDataSource {
         };
         Ok(user)
     }
-    async fn get_user_by_name(&self, _name: String) -> Result<User, DataSourceError> {
+    async fn get_user_by_name(&mut self, _name: String) -> Result<User, DataSourceError> {
         let user = User {
             id: 1,
             name: "Azure User".to_string(),
@@ -104,7 +107,7 @@ impl UserDataSource for AzureDataSource {
         };
         Ok(user)
     }
-    async fn get_users(&self) -> Result<Vec<User>, DataSourceError> {
+    async fn get_users(&mut self) -> Result<Vec<User>, DataSourceError> {
         let user = User {
             id: 1,
             name: "Azure User".to_string(),
@@ -112,7 +115,7 @@ impl UserDataSource for AzureDataSource {
         };
         Ok(vec![user])
     }
-    async fn create_user(&self, _credentials: &Credentials) -> Result<User, DataSourceError> {
+    async fn create_user(&mut self, _credentials: &Credentials) -> Result<User, DataSourceError> {
         let user = User {
             id: 1,
             name: "Azure User".to_string(),
@@ -120,7 +123,7 @@ impl UserDataSource for AzureDataSource {
         };
         Ok(user)
     }
-    async fn update_user(&self, _id: u32, _user: &User) -> Result<User, DataSourceError> {
+    async fn update_user(&mut self, _id: u32, _user: &User) -> Result<User, DataSourceError> {
         let user = User {
             id: 1,
             name: "Azure User".to_string(),

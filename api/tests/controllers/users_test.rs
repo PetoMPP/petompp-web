@@ -1,25 +1,31 @@
 use petompp_web_api::{
     auth::token::create_token,
-    models::{
-        password::Password,
-        user::{Role, User},
-    },
+    data_sources::data_source::DataSourceManager,
+    models::user::{Role, User},
     Secrets,
 };
 use rocket::{http::Header, local::blocking::Client};
 use strum::IntoEnumIterator;
 
+use crate::test_db_pool::{TestConfig, TestDataSource, TestPool};
+
 #[test]
 fn activate_test() {
-    let rocket = petompp_web_api::build_rocket();
+    let config = TestConfig {
+        should_fail: false,
+        users: vec![User {
+            id: 1,
+            ..Default::default()
+        }],
+    };
+    let manager: DataSourceManager<TestDataSource, _, _> = DataSourceManager::new(config).unwrap();
+    let db_pool = TestPool::builder(manager).build().unwrap();
+    let rocket = petompp_web_api::build_rocket(db_pool);
     let client = Client::untracked(rocket).unwrap();
     for role in Role::iter() {
         let user = User {
-            id: 1,
-            name: "admin".to_string(),
-            password: Password::new("password".to_string()),
             role,
-            confirmed: true,
+            ..Default::default()
         };
         let mut req = client.post("/api/v1/users/1/activate");
         req.add_header(Header::new(
@@ -42,7 +48,16 @@ fn activate_test() {
 
 #[test]
 fn activate_test_no_auth() {
-    let rocket = petompp_web_api::build_rocket();
+    let config = TestConfig {
+        should_fail: false,
+        users: vec![User {
+            id: 1,
+            ..Default::default()
+        }],
+    };
+    let manager: DataSourceManager<TestDataSource, _, _> = DataSourceManager::new(config).unwrap();
+    let db_pool = TestPool::builder(manager).build().unwrap();
+    let rocket = petompp_web_api::build_rocket(db_pool);
     let client = Client::untracked(rocket).unwrap();
     let req = client.post("/api/v1/users/1/activate");
 
