@@ -1,4 +1,7 @@
-use crate::pages::{about::About, contact::Contact, home::Home, projects::Projects};
+use crate::pages::{
+    about::About, contact::Contact, home::Home, login::Login, projects::Projects,
+    register::Register,
+};
 use std::fmt::Display;
 use yew::prelude::*;
 use yew_router::prelude::*;
@@ -13,6 +16,10 @@ pub enum Route {
     About,
     #[at("/contact")]
     Contact,
+    #[at("/login")]
+    Login,
+    #[at("/register")]
+    Register,
 }
 
 impl Display for Route {
@@ -27,5 +34,7 @@ pub fn switch(route: Route) -> Html {
         Route::Projects => html! {<Projects />},
         Route::About => html! {<About />},
         Route::Contact => html! {<Contact />},
+        Route::Login => html! {<Login />},
+        Route::Register => html! {<Register />},
     }
 }
