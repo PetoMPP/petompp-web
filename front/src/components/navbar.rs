@@ -1,21 +1,12 @@
-use stylist::{style, yew::styled_component, Style};
+use crate::router::Route;
+use stylist::yew::styled_component;
 use yew::prelude::*;
 use yew_router::prelude::{use_navigator, use_route};
 
-use crate::router::Route;
-
 #[styled_component(Navbar)]
 pub fn navbar() -> Html {
-    let style = style!(
-        r#"
-            display: flex;
-            margin: 0 auto;
-            width: 100%;
-        "#
-    )
-    .unwrap();
     html! {
-        <div class={style}>
+        <div class={"flex flex-row w-full justify-between gap-1 md:gap-4"}>
             {for get_navbar_items().iter().map(|i| i.clone()) }
         </div>
     }
@@ -37,44 +28,15 @@ struct NavbarItemProps {
 #[styled_component(NavbarItem)]
 fn navbar_item(props: &NavbarItemProps) -> Html {
     let navigator = use_navigator().unwrap();
-    let get_style = |is_hovered: bool| {
-        let background = match is_hovered {
-            true => format!(
-                "linear-gradient({}, {} 60%, {} 140%)",
-                "#fddfdf", "#fff1f1", "#c38d8d"
-            ),
-            false => format!(
-                "linear-gradient({}, {} 60%, {} 140%)",
-                "#ffc4c4", "#ffd3d3", "#795858"
-            ),
-        };
-        format!(
-            r#"
-            display: flex;
-            width: 100%;
-            background: {};
-            padding: min(1.5vw, 1em, 1rem);
-            justify-content: center;
-            border: none;
-        "#,
-            background
-        )
-    };
     let curr_route = use_route::<Route>().unwrap();
-    let is_hover = use_state(|| false);
-
-    let onmouseenter = Callback::from({
-        let is_hover = is_hover.clone();
-        move |_| is_hover.set(true)
-    });
-    let onmouseleave = Callback::from({
-        let is_hover = is_hover.clone();
-        move |_| is_hover.set(false)
-    });
-    let style = Style::new(get_style(curr_route == props.route || *is_hover)).unwrap();
     let route = props.route.clone();
+    let bg_gradient = match route == curr_route {
+        true => "bg-gradient-to-b from-cyan-300 to-blue-400",
+        false => "bg-gradient-to-b from-cyan-200 to-blue-300 hover:bg-gradient-to-b hover:from-cyan-300 hover:to-blue-400",
+    };
+    let class = format!("flex grow my-1 p-2 min-w-60 text-lg rounded-md justify-center shadow-sm {}", bg_gradient);
     let onclick = Callback::from(move |_| navigator.push(&route));
     html! {
-        <button class={style} {onclick} {onmouseenter} {onmouseleave}><h5>{&props.name}</h5></button>
+        <button {class} {onclick}>{&props.name}</button>
     }
 }
