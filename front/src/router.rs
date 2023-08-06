@@ -1,9 +1,7 @@
+use crate::pages::{about::About, contact::Contact, home::Home, projects::Projects};
 use std::fmt::Display;
-
 use yew::prelude::*;
 use yew_router::prelude::*;
-
-use crate::pages::{about::About, contact::Contact, home::Home, projects::Projects};
 
 #[derive(Clone, Routable, PartialEq, Debug)]
 pub enum Route {
