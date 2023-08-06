@@ -1,31 +1,22 @@
-use stylist::{style, yew::styled_component};
+use crate::{pages::page_base::PageBase, components::link::Link};
+use stylist::yew::styled_component;
 use yew::prelude::*;
-
-use crate::pages::page_base::PageBase;
 
 #[styled_component(Contact)]
 pub fn contact() -> Html {
-    let list_style = style!(
-        r#"
-            padding: 0 0 0 1.5rem;
-            list-style-type: disc;
-        "#
-    )
-    .unwrap();
     html! {
         <PageBase>
-            <h1>{"Contact"}</h1>
-            <p>{"This is the contact page."}</p>
-            <p>{"You can reach me at:"}</p>
-            <ul class={list_style}>
+            <p class={"text-xl"}>{"Contact"}</p>
+            <p class={"text-sm"}>{"This is the contact page. You can reach me at:"}</p>
+            <ul class={"text-sm list-disc list-inside"}>
                 <li>
-                    <a href="https://github.com/PetoMPP">{"my github"}</a>
+                    <Link href={"https://github.com/PetoMPP"} text={"My github"}/>
                 </li>
                 <li>
-                    <a href="https://www.linkedin.com/in/piotr-pietrzyk-5b0b55180/">{"my linkedin"}</a>
+                    <Link href={"https://www.linkedin.com/in/piotr-pietrzyk-5b0b55180/"} text={"My linkedin"}/>
                 </li>
                 <li>
-                    <a href="mailto:piotreq22@gmail.com">{"my email address"}</a>
+                    <Link href={"mailto:piotreq22@gmail.com"} text={"My email address"}/>
                 </li>
             </ul>
         </PageBase>

@@ -7,8 +7,8 @@ use crate::pages::page_base::PageBase;
 pub fn projects() -> Html {
     html! {
         <PageBase>
-            <h1>{"Projects"}</h1>
-            <p>{"This is where I will put my projects."}</p>
+            <p class={"text-xl"}>{"Projects"}</p>
+            <p class={"text-sm"}>{"This is where I will put my projects."}</p>
         </PageBase>
     }
 }
