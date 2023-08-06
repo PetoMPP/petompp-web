@@ -1,7 +1,4 @@
-use stylist::{
-    style,
-    yew::{styled_component, Global},
-};
+use stylist::{style, yew::styled_component};
 use yew::{prelude::*, Renderer};
 use yew_router::{BrowserRouter, Switch};
 
@@ -29,7 +26,6 @@ fn app() -> Html {
     .unwrap();
     html! {
         <>
-        <Global css={include_str!("main.css")} />
         <BrowserRouter>
             <div class={style}>
                 <h2>{"PetoMPP.NET"}</h2>
