@@ -1,4 +1,4 @@
-use crate::{pages::page_base::PageBase, components::link::Link};
+use crate::{atoms::link::RouteLink, pages::page_base::PageBase, router::Route};
 use stylist::yew::styled_component;
 use yew::prelude::*;
 
@@ -8,7 +8,7 @@ pub fn about() -> Html {
         <PageBase>
             <p class={"text-xl"}>{"About"}</p>
             <p class={"text-sm"}>{"This is a page about me. I'm a software engineer interested in learning more about the web."}</p>
-            <p class={"text-sm"}>{"If you want to know more about me, feel free to "}<Link href={"/contact"} text={"contact me"}/>{"."}</p>
+            <p class={"text-sm"}>{"If you want to know more about me, feel free to "}<RouteLink route={Route::Contact} text={"contact me"}/>{"."}</p>
         </PageBase>
     }
 }
