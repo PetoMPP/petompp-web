@@ -1,5 +1,5 @@
 use crate::{
-    atoms::{button::Button, label::Label, text_input::TextInput},
+    components::atoms::{button::Button, label::Label, text_input::TextInput},
     pages::page_base::PageBase,
 };
 use stylist::yew::styled_component;

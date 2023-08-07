@@ -1,3 +1,2 @@
-pub mod header;
-pub mod navbar;
-pub mod user_box;
+pub mod atoms;
+pub mod organisms;
