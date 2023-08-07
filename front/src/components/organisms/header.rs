@@ -1,14 +1,10 @@
+use super::user_box::UserBox;
 use stylist::yew::styled_component;
 use yew::prelude::*;
-use crate::components::user_box::UserBox;
 
 #[styled_component(Header)]
 pub fn header() -> Html {
-    let class = classes!(
-        "w-full",
-        "flex",
-        "gap-2",
-    );
+    let class = classes!("w-full", "flex", "gap-2",);
     let banner_class = classes!(
         "flex",
         "grow",

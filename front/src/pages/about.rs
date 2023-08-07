@@ -1,4 +1,4 @@
-use crate::{atoms::link::RouteLink, pages::page_base::PageBase, router::Route};
+use crate::{components::atoms::link::RouteLink, pages::page_base::PageBase, router::Route};
 use stylist::yew::styled_component;
 use yew::prelude::*;
 
