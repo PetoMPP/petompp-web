@@ -1,4 +1,4 @@
-use crate::{pages::page_base::PageBase, atoms::link::HrefLink};
+use crate::{pages::page_base::PageBase, components::atoms::link::HrefLink};
 use stylist::yew::styled_component;
 use yew::prelude::*;
 
