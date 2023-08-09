@@ -1,4 +1,3 @@
-use stylist::yew::styled_component;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use crate::router::Route;
@@ -11,7 +10,7 @@ pub struct LinkProps {
     pub text: Option<String>,
 }
 
-#[styled_component(HrefLink)]
+#[function_component(HrefLink)]
 pub fn link(props: &LinkProps) -> Html {
     let text = props.text.clone().unwrap_or(props.href.clone());
 
@@ -26,7 +25,7 @@ pub struct RouteLinkProps {
     pub text: Option<String>,
 }
 
-#[styled_component(RouteLink)]
+#[function_component(RouteLink)]
 pub fn route_link(props: &RouteLinkProps) -> Html {
     let text = props.text.clone().unwrap_or(props.route.to_string());
 

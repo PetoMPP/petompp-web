@@ -1,9 +1,8 @@
-use stylist::yew::styled_component;
 use yew::prelude::*;
 
 use crate::pages::page_base::PageBase;
 
-#[styled_component(Projects)]
+#[function_component(Projects)]
 pub fn projects() -> Html {
     html! {
         <PageBase>

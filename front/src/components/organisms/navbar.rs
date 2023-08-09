@@ -1,9 +1,8 @@
 use crate::router::Route;
-use stylist::yew::styled_component;
 use yew::prelude::*;
 use yew_router::prelude::{use_navigator, use_route};
 
-#[styled_component(Navbar)]
+#[function_component(Navbar)]
 pub fn navbar() -> Html {
     html! {
         <div class={"flex flex-row w-full justify-between gap-1 md:gap-4"}>
@@ -25,7 +24,7 @@ struct NavbarItemProps {
     route: Route,
 }
 
-#[styled_component(NavbarItem)]
+#[function_component(NavbarItem)]
 fn navbar_item(props: &NavbarItemProps) -> Html {
     let navigator = use_navigator().unwrap();
     let curr_route = use_route::<Route>().unwrap();

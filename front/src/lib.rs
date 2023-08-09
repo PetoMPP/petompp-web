@@ -4,7 +4,6 @@ use crate::{
 };
 use models::user::User;
 use serde::{Deserialize, Serialize};
-use stylist::yew::styled_component;
 use yew::prelude::*;
 use yew_router::{BrowserRouter, Switch};
 use yewdux::store::Store;
@@ -23,7 +22,7 @@ pub struct SessionStore {
     token: Option<String>,
 }
 
-#[styled_component(App)]
+#[function_component(App)]
 pub fn app() -> Html {
     html! {
         <BrowserRouter>
