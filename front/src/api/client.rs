@@ -28,11 +28,6 @@ pub enum Response<T> {
 
 impl<T: DeserializeOwned> Response<T> {
     async fn from_response(value: reqwasm::http::Response) -> Result<Self, Error> {
-        // Response body
-        // {
-        //   "status": "success" | "error",
-        //   "data": T | String,
-        // }
         let status_code = value.status();
         let body = value
             .json::<Value>()
