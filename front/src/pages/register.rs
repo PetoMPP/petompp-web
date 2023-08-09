@@ -3,7 +3,6 @@ use crate::{
     models::credentials::Credentials, pages::page_base::PageBase, router::Route,
 };
 use std::fmt::Display;
-use stylist::yew::styled_component;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -24,7 +23,7 @@ impl Display for Error {
     }
 }
 
-#[styled_component(Register)]
+#[function_component(Register)]
 pub fn register() -> Html {
     let form_data = use_mut_ref(|| Credentials::default());
     let error_state = use_state(|| Option::None);

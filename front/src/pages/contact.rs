@@ -1,8 +1,7 @@
 use crate::{pages::page_base::PageBase, components::atoms::link::HrefLink};
-use stylist::yew::styled_component;
 use yew::prelude::*;
 
-#[styled_component(Contact)]
+#[function_component(Contact)]
 pub fn contact() -> Html {
     html! {
         <PageBase>

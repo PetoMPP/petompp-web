@@ -1,8 +1,7 @@
 use super::user_box::UserBox;
-use stylist::yew::styled_component;
 use yew::prelude::*;
 
-#[styled_component(Header)]
+#[function_component(Header)]
 pub fn header() -> Html {
     let class = classes!("w-full", "flex", "gap-2",);
     let banner_class = classes!(

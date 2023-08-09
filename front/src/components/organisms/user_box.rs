@@ -1,12 +1,11 @@
 use crate::{router::Route, SessionStore, async_mouse_event};
-use stylist::yew::styled_component;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use yewdux::prelude::*;
 
 /// A component to display a user's information.
 /// Or login/register if not logged in.
-#[styled_component(UserBox)]
+#[function_component(UserBox)]
 pub fn user_box() -> Html {
     let (session_store, _) = use_store::<SessionStore>();
     html! {
