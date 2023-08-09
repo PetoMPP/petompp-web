@@ -1,8 +1,7 @@
 use crate::{components::atoms::link::RouteLink, pages::page_base::PageBase, router::Route};
-use stylist::yew::styled_component;
 use yew::prelude::*;
 
-#[styled_component(About)]
+#[function_component(About)]
 pub fn about() -> Html {
     html! {
         <PageBase>

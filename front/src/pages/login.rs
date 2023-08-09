@@ -2,12 +2,11 @@ use crate::{
     api, assign_value_event, async_mouse_event, components::atoms::text_input::TextInput,
     models::credentials::Credentials, pages::page_base::PageBase, router::Route, SessionStore,
 };
-use stylist::yew::styled_component;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use yewdux::prelude::use_store;
 
-#[styled_component(Login)]
+#[function_component(Login)]
 pub fn login() -> Html {
     let form_data = use_mut_ref(|| Credentials::default());
     let error_state = use_state(|| Option::None);
