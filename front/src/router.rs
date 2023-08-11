@@ -1,6 +1,6 @@
 use crate::pages::{
     about::About, contact::Contact, home::Home, login::Login, projects::Projects,
-    register::Register,
+    register::Register, admin_panel::AdminPanel, not_found::NotFound,
 };
 use std::fmt::Display;
 use yew::prelude::*;
@@ -20,6 +20,11 @@ pub enum Route {
     Login,
     #[at("/register")]
     Register,
+    #[at("/admin")]
+    AdminPanel,
+    #[not_found]
+    #[at("/404")]
+    NotFound,
 }
 
 impl Display for Route {
@@ -36,5 +41,7 @@ pub fn switch(route: Route) -> Html {
         Route::Contact => html! {<Contact />},
         Route::Login => html! {<Login />},
         Route::Register => html! {<Register />},
+        Route::AdminPanel => html! { <AdminPanel />},
+        Route::NotFound => html! {  <NotFound />},
     }
 }
