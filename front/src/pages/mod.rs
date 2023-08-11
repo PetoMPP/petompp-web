@@ -1,7 +1,9 @@
 pub mod about;
+pub mod admin_panel;
 pub mod contact;
 pub mod home;
 pub mod login;
+pub mod not_found;
 pub mod page_base;
 pub mod projects;
 pub mod register;
