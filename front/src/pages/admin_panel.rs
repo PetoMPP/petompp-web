@@ -10,7 +10,7 @@ pub fn admin_panel() -> Html {
     };
     html! {
         <PageBase>
-            <div class="flex text-2xl font-bold font-mono md:w-3/4 w-full m-auto">
+            <div class="flex text-2xl font-bold font-mono lg:w-3/4 w-full m-auto">
                 <p>{"Admin Panel"}</p>
                 // User management
             </div>

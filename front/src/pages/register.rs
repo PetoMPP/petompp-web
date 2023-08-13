@@ -54,7 +54,7 @@ pub fn register() -> Html {
     });
     html! {
         <PageBase>
-        <div class={"flex flex-col gap-2 w-5/6 md:w-3/4 lg:w-1/2 m-auto"}>
+        <div class={"flex flex-col gap-2 w-5/6 lg:w-3/4 lg:w-1/2 m-auto"}>
             <div class={"flex flex-row flex-wrap justify-between items-center mb-2"}>
                 <p class={"flex text-xl"}>{"Register"}</p>
                 { if let Some(Error::Global(error)) = &(*error_state) { html!{<p class={"flex text-red-500 text-xs ml-2 italic"}>{error.clone()}</p>} } else { html!{} }}
