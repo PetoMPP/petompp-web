@@ -51,7 +51,7 @@ fn logout_button() -> Html {
     let history = use_navigator().unwrap();
     let onclick = async_mouse_event!(session_dispatch, history {
         session_dispatch.reduce(|_| SessionStore { token: None, user: None }.into());
-        history.push(&Route::Home);
+        history.push(&Route::Login);
     });
     html! {
         <div class="flex flex-row text-lg lg:text-2xl gap-1">
