@@ -57,19 +57,21 @@ fn menu_dropdown(props: &MenuDropdownProps) -> Html {
     let onclick = {
         let show = props.show.clone();
         let setshow = props.setshow.clone();
-        Callback::from(move |_| setshow.emit(!show))
+        Callback::from(move |_: MouseEvent| setshow.emit(!show))
     };
-    if !props.show {
-        return html! {};
-    }
+    let class = classes!("absolute", "top-0", "left-0", "w-full", "h-full",);
+    let class = match props.show {
+        false => classes!(class, "hidden"),
+        _ => class,
+    };
     html! {
-        <div {onclick} class={"absolute top-0 left-0 w-full h-full bg-blue-100 bg-opacity-60"}>
-            <div class={"flex flex-col absolute left-0 mt-20 rounded-md gap-2"}>
-            <NavbarItem pos={Pos::Left} route={Route::Home} name={"Home"}/>
-            <NavbarItem pos={Pos::Left} route={Route::Projects} name={"Projects"}/>
-            <NavbarItem pos={Pos::Left} route={Route::About} name={"About"}/>
-            <NavbarItem pos={Pos::Left} route={Route::Contact} name={"Contact"}/>
-            </div>
+        <div {onclick} {class}>
+        <div class={"animate-fade-right animate-duration-[200ms] z-10 flex flex-col gap-2 absolute left-0 mt-20"}>
+        <NavbarItem pos={Pos::Left} route={Route::Home} name={"Home"}/>
+        <NavbarItem pos={Pos::Left} route={Route::Projects} name={"Projects"}/>
+        <NavbarItem pos={Pos::Left} route={Route::About} name={"About"}/>
+        <NavbarItem pos={Pos::Left} route={Route::Contact} name={"Contact"}/>
+        </div>
         </div>
     }
 }
