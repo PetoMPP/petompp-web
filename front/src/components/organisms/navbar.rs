@@ -1,41 +1,17 @@
-use crate::router::Route;
+use crate::{
+    components::atoms::navbar_item::{NavbarItem, Pos},
+    router::Route,
+};
 use yew::prelude::*;
-use yew_router::prelude::{use_navigator, use_route};
 
 #[function_component(Navbar)]
 pub fn navbar() -> Html {
     html! {
-        <div class={"flex flex-row w-full justify-between gap-1 md:gap-4"}>
-            {for get_navbar_items().iter().map(|i| i.clone()) }
+        <div class={classes!("flex", "flex-row", "gap-2", "px-0.5", "pb-1", "rounded-b-md")}>
+            <NavbarItem pos={Pos::Top} route={Route::Home} name={"Home"}/>
+            <NavbarItem pos={Pos::Top} route={Route::Projects} name={"Projects"}/>
+            <NavbarItem pos={Pos::Top} route={Route::About} name={"About"}/>
+            <NavbarItem pos={Pos::Top} route={Route::Contact} name={"Contact"}/>
         </div>
-    }
-}
-
-fn get_navbar_items() -> Vec<Html> {
-    vec![Route::Home, Route::Projects, Route::About, Route::Contact]
-        .iter()
-        .map(|r| html! {<NavbarItem name={r.to_string()} route={r.clone()}/> })
-        .collect()
-}
-
-#[derive(PartialEq, Properties, Clone)]
-struct NavbarItemProps {
-    name: String,
-    route: Route,
-}
-
-#[function_component(NavbarItem)]
-fn navbar_item(props: &NavbarItemProps) -> Html {
-    let navigator = use_navigator().unwrap();
-    let curr_route = use_route::<Route>().unwrap();
-    let route = props.route.clone();
-    let bg_gradient = match route == curr_route {
-        true => "bg-gradient-to-b from-cyan-300 to-blue-400",
-        false => "bg-gradient-to-b from-cyan-200 to-blue-300 hover:bg-gradient-to-b hover:from-cyan-300 hover:to-blue-400",
-    };
-    let class = format!("flex grow my-1 p-2 min-w-60 text-lg rounded-md justify-center shadow-sm {}", bg_gradient);
-    let onclick = Callback::from(move |_| navigator.push(&route));
-    html! {
-        <button {class} {onclick}>{&props.name}</button>
     }
 }
