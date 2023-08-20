@@ -9,6 +9,7 @@ edition = "2021"
 opt-level = "s"
 
 [dependencies]
+chrono = {version = "0.4", features = ["serde"]}
 gloo = "0.10"
 lazy_static = "1.4"
 reqwasm = "0.5"

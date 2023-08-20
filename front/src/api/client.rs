@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use reqwasm::http::*;
-use serde::{de::DeserializeOwned, Serialize, Deserialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::models::{credentials::Credentials, user::User};
@@ -75,10 +75,20 @@ impl Client {
         format!("{}{}{}", *BASE_URL, separator, path)
     }
 
-    async fn post_json<R: DeserializeOwned>(path: &str, body: &impl Serialize) -> Result<R, Error> {
-        let request = Request::new(Self::get_url(path).as_str())
-            .method(Method::POST)
-            .body(serde_json::to_string(body).map_err(|e| Error::Parse(e.to_string()))?);
+    async fn send_json<R: DeserializeOwned>(
+        method: Method,
+        path: &str,
+        token: Option<&str>,
+        body: Option<&impl Serialize>,
+    ) -> Result<R, Error> {
+        let mut request = Request::new(Self::get_url(path).as_str()).method(method);
+        if let Some(token) = token {
+            request = request.header("Authorization", format!("Bearer {}", token).as_str());
+        }
+        if let Some(body) = body {
+            request =
+                request.body(serde_json::to_string(body).map_err(|e| Error::Parse(e.to_string()))?);
+        }
 
         let response = request
             .send()
@@ -92,12 +102,45 @@ impl Client {
     }
 
     pub async fn login(credentials: Credentials) -> Result<LoginResponse, Error> {
-        Self::post_json("api/v1/users/login", &credentials).await
+        Self::send_json(Method::POST, "api/v1/users/login", None, Some(&credentials)).await
     }
 
     pub async fn register(credentials: Credentials) -> Result<(), Error> {
-        Self::post_json::<User>("api/v1/users", &credentials)
+        Self::send_json::<User>(Method::POST, "api/v1/users", None, Some(&credentials))
             .await
             .map(|_| ())
+    }
+
+    pub async fn get_users(token: &str) -> Result<Vec<User>, Error> {
+        Self::send_json(
+            Method::GET,
+            "api/v1/users/all?range=all",
+            Some(token),
+            Option::<&String>::None,
+        )
+        .await
+        .map(|u: Vec<Vec<User>>| u[0].clone())
+    }
+
+    pub async fn activate_user(token: &str, id: i32) -> Result<(), Error> {
+        Self::send_json::<User>(
+            Method::POST,
+            format!("api/v1/users/{}/activate", id).as_str(),
+            Some(token),
+            Option::<&String>::None,
+        )
+        .await
+        .map(|_| ())
+    }
+
+    pub async fn delete_user(token: &str, id: i32) -> Result<(), Error> {
+        Self::send_json::<String>(
+            Method::DELETE,
+            format!("api/v1/users/{}", id).as_str(),
+            Some(token),
+            Option::<&String>::None,
+        )
+        .await
+        .map(|_| ())
     }
 }
