@@ -80,7 +80,7 @@ pub fn app() -> Html {
         <BrowserRouter>
         <body class={"min-h-screen"}>
             <Header />
-            <div class={"m-auto w-5/6 lg:w-2/3 flex flex-col items-center"}>
+            <div class={"m-auto w-5/6 xl:w-2/3 flex flex-col items-center"}>
                 <Switch<Route> render={switch}/>
             </div>
         </body>
