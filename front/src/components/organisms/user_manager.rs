@@ -82,12 +82,12 @@ fn user_row(props: &UserRowProps) -> Html {
         })
     };
     let (activate_class, activate_text) = match props.user.confirmed {
-        true => (classes!("btn", "btn-sm", "btn-success", "px-1", "btn-disabled"), "Activated"),
-        false => (classes!("btn", "btn-sm", "btn-success", "px-1"), "Activate"),
+        true => (classes!("btn", "btn-sm", "btn-success", "px-1", "mr-1", "btn-disabled", "aria-disabled"), "Activated"),
+        false => (classes!("btn", "btn-sm", "btn-success", "px-1", "mr-1"), "Activate"),
     };
     let (delete_class, delete_text) = match props.user.deleted_at.is_some() {
-        true => (classes!("btn", "btn-sm", "btn-warning", "px-1", "btn-disabled"), "Deleted"),
-        false => (classes!("btn", "btn-sm", "btn-warning", "px-1"), "Delete"),
+        true => (classes!("btn", "btn-sm", "btn-warning", "px-1", "mr-1", "btn-disabled", "aria-disabled"), "Deleted"),
+        false => (classes!("btn", "btn-sm", "btn-warning", "px-1", "mr-1"), "Delete"),
     };
     html! {
         <tr>
