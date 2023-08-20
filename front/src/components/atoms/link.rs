@@ -13,7 +13,7 @@ pub fn link(props: &LinkProps) -> Html {
     let text = props.text.clone().unwrap_or(props.href.clone());
 
     html! {
-        <a href={props.href.clone()} class={"link-info"}>{text}</a>
+        <a href={props.href.clone()} class={"link-accent"}>{text}</a>
     }
 }
 
@@ -28,6 +28,6 @@ pub fn route_link(props: &RouteLinkProps) -> Html {
     let text = props.text.clone().unwrap_or(props.route.to_string());
 
     html! {
-        <Link<Route> to={props.route.clone()} classes={"link-info"}>{text}</Link<Route>>
+        <Link<Route> to={props.route.clone()} classes={"link-accent"}>{text}</Link<Route>>
     }
 }
