@@ -1,5 +1,5 @@
 pub mod about;
-pub mod admin_panel;
+pub mod admin;
 pub mod contact;
 pub mod home;
 pub mod login;
