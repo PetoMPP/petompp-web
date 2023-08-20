@@ -10,7 +10,14 @@ module.exports = {
   },
   plugins: [require('tailwindcss-animated'), require("daisyui")],
   daisyui: {
-    themes: ["aqua", "dark"],
+    themes: [
+      {
+        aqua: {
+          ...require("daisyui/src/theming/themes")["[data-theme=aqua]"],
+          "primary": "#38bdf8"
+        }
+      }
+    ],
   },
 }
 
