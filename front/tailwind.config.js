@@ -8,6 +8,9 @@ module.exports = {
       }
     }
   },
-  plugins: [require('tailwindcss-animated')],
+  plugins: [require('tailwindcss-animated'), require("daisyui")],
+  daisyui: {
+    themes: ["aqua", "dark"],
+  },
 }
 
