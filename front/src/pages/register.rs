@@ -1,5 +1,5 @@
 use crate::{
-    api, assign_value_event, async_mouse_event, components::atoms::text_input::TextInput,
+    api, assign_value_event, async_mouse_event,
     models::credentials::Credentials, pages::page_base::PageBase, router::Route,
 };
 use std::fmt::Display;
@@ -63,12 +63,12 @@ pub fn register() -> Html {
                 <label class={"flex block text-gray-700 text-sm font-bold"}>{"Username"}</label>
                 { if let Some(Error::Username(error)) = &(*error_state) { html!{<p class={"flex text-red-500 text-xs ml-2 italic"}>{error.clone()}</p>} } else { html!{} }}
             </div>
-            <TextInput placeholder={"Username.."} password={false} onchange={onchange_username}/>
+            <input class={"input"} placeholder={"Username.."} type={"text"} onchange={onchange_username}/>
             <div class={"flex flex-row flex-wrap justify-between items-center"}>
                 <label class={"flex block text-gray-700 text-sm font-bold mb-2"}>{"Password"}</label>
                 { if let Some(Error::Password(error)) = &(*error_state) { html!{<p class={"flex text-red-500 text-xs ml-2 italic"}>{error.clone()}</p>} } else { html!{} }}
             </div>
-            <TextInput placeholder={"Password.."} password={true} onchange={onchange_password}/>
+            <input class={"input"} placeholder={"Password.."} type={"password"} onchange={onchange_password}/>
             <button class={"bg-cyan-300 hover:bg-cyan-400 text-gray-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"} {onclick}>{"Register"}</button>
         </div>
         </PageBase>
