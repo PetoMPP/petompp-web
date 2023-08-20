@@ -95,7 +95,7 @@ fn user_button(props: &UserButtonProps) -> Html {
             .to_string()
     };
     let to = match props.user.role {
-        Role::Admin => Route::AdminPanel,
+        Role::Admin => Route::AdminPanelRoot,
         _ => Route::Home,
     };
     html! {
