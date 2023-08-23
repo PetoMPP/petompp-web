@@ -2,7 +2,13 @@ use yew::{platform::spawn_local, prelude::*};
 use yew_router::prelude::*;
 use yewdux::prelude::*;
 
-use crate::{api::client::Client, models::user::User, router::Route, SessionStore};
+use crate::{
+    api::client::Client,
+    components::atoms::modal::{get_modal_open_callback, ButtonMode, Modal, ModalButton},
+    models::user::User,
+    router::Route,
+    SessionStore,
+};
 #[function_component(UserManager)]
 pub fn user_manager() -> Html {
     let (session_store, session_dispatch) = use_store::<SessionStore>();
@@ -107,19 +113,31 @@ fn user_row(props: &UserRowProps) -> Html {
         });
         return html! { <Redirect<Route> to={Route::Login} />};
     }
-    let (activate_class, activate_text) = match props.user.confirmed {
-        true => (
-            "btn btn-sm btn-success px-1 mr-1 btn-disabled aria-disabled",
-            "Activated",
-        ),
-        false => ("btn btn-sm btn-success px-1 mr-1", "Activate"),
+    let activate_button = match props.user.confirmed {
+        true => {
+            html! {<button onclick={activate} class={"btn btn-sm btn-success px-1 mr-1 btn-disabled aria-disabled"}>{"Activated"}</button>}
+        }
+        false => {
+            let id = format!("activate_modal_{}", props.user.id);
+            html! {
+                <Modal id={id.clone()} title={"Activate"} message={"Do you want to activate this user?"} mode={ButtonMode::ConfirmCancel(ModalButton::new("activate", Some(activate)), ModalButton::new("cancel", None))}>
+                    <button onclick={get_modal_open_callback(id)} class={"btn btn-sm btn-success px-1 mr-1"}>{"Activate"}</button>
+                </Modal>
+            }
+        }
     };
-    let (delete_class, delete_text) = match props.user.deleted_at.is_some() {
-        true => (
-            "btn btn-sm btn-warning px-1 mr-1 btn-disabled aria-disabled",
-            "Deleted",
-        ),
-        false => ("btn btn-sm btn-warning px-1 mr-1", "Delete"),
+    let delete_button = match props.user.deleted_at.is_some() {
+        true => {
+            html! {<button onclick={delete} class={"btn btn-sm btn-warning px-1 mr-1 btn-disabled aria-disabled"}>{"Deleted"}</button>}
+        }
+        false => {
+            let id = format!("delete_modal_{}", props.user.id);
+            html! {
+                <Modal id={id.clone()} title={"Delete"} message={"Do you want to delete this user?"} mode={ButtonMode::RiskyCancel(ModalButton::new("delete", Some(delete)), ModalButton::new("cancel", None))}>
+                    <button onclick={get_modal_open_callback(id)} class={"btn btn-sm btn-warning px-1 mr-1"}>{"Delete"}</button>
+                </Modal>
+            }
+        }
     };
     html! {
         <tr>
@@ -127,8 +145,8 @@ fn user_row(props: &UserRowProps) -> Html {
             <td class={"break-all"}>{&props.user.name}</td>
             <td>
                 <div class="flex flex-row">
-                    <button onclick={activate} class={activate_class}>{activate_text}</button>
-                    <button onclick={delete} class={delete_class}>{delete_text}</button>
+                    {activate_button}
+                    {delete_button}
                 </div>
             </td>
         </tr>

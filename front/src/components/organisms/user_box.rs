@@ -1,5 +1,6 @@
 use crate::{
     async_mouse_event,
+    components::atoms::modal::{get_modal_open_callback, ButtonMode, Modal, ModalButton},
     models::user::{Role, User},
     router::Route,
     SessionStore, Width, WindowStore,
@@ -15,17 +16,17 @@ pub fn user_box() -> Html {
     let (session_store, _) = use_store::<SessionStore>();
     if let Some(user) = &session_store.as_ref().user {
         return html! {
-                <div class={"flex flex-row gap-1"}>
-                    <UserButton user={user.clone()}/>
-                    <LogoutButton/>
-                </div>
+            <div class={"flex flex-row gap-1"}>
+                <UserButton user={user.clone()}/>
+                <LogoutButton/>
+            </div>
         };
     }
     html! {
-            <div class={"flex flex-row gap-1"}>
-                <LoginButton/>
-                <RegisterButton/>
-            </div>
+        <div class={"flex flex-row gap-1"}>
+            <LoginButton/>
+            <RegisterButton/>
+        </div>
     }
 }
 
@@ -43,6 +44,7 @@ fn login_button() -> Html {
 
 #[function_component(LogoutButton)]
 fn logout_button() -> Html {
+    const ID: &str = "logout_modal";
     let (_, session_dispatch) = use_store::<SessionStore>();
     let history = use_navigator().unwrap();
     let onclick = async_mouse_event!(session_dispatch, history {
@@ -50,7 +52,8 @@ fn logout_button() -> Html {
         history.push(&Route::Login);
     });
     html! {
-        <button {onclick} class={"btn btn-warning btn-square p-1"}>
+        <Modal id={ID} title={"Logout"} message={"Do you want to logout?"} mode={ButtonMode::RiskyCancel(ModalButton::new("logout", Some(onclick)), ModalButton::new("cancel", None))}>
+        <button onclick={get_modal_open_callback(ID)} class={"btn btn-warning btn-square p-1"}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <g>
                 <path fill="none" d="M0 0h24v24H0z"/>
@@ -58,6 +61,7 @@ fn logout_button() -> Html {
                 </g>
             </svg>
         </button>
+        </Modal>
     }
 }
 
