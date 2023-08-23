@@ -2,8 +2,22 @@ use wasm_bindgen::JsCast;
 use web_sys::HtmlDialogElement;
 use yew::prelude::*;
 
+use crate::utils::ext::Mergable;
+
 #[derive(PartialEq, Clone)]
-pub struct ModalButton(pub String, pub Option<Callback<MouseEvent>>);
+pub struct ModalButton {
+    pub text: String,
+    pub onclick: Option<Callback<MouseEvent>>,
+}
+
+impl ModalButton {
+    pub fn new(text: impl Into<String>, onclick: Option<Callback<MouseEvent>>) -> Self {
+        Self {
+            text: text.into(),
+            onclick,
+        }
+    }
+}
 
 #[derive(PartialEq, Clone)]
 pub enum ButtonMode {
@@ -46,8 +60,8 @@ pub fn modal(props: &ModalProps) -> Html {
     }
 }
 
-pub fn get_modal_open_callback(id: &String) -> Callback<MouseEvent> {
-    let id = id.clone();
+pub fn get_modal_open_callback(id: impl Into<String>) -> Callback<MouseEvent> {
+    let id: String = id.into();
     Callback::from(move |_: MouseEvent| {
         let modal: HtmlDialogElement = web_sys::window()
             .unwrap()
@@ -60,8 +74,8 @@ pub fn get_modal_open_callback(id: &String) -> Callback<MouseEvent> {
     })
 }
 
-pub fn get_modal_close_callback(id: &String) -> Callback<MouseEvent> {
-    let id = id.clone();
+pub fn get_modal_close_callback(id: impl Into<String>) -> Callback<MouseEvent> {
+    let id = id.into();
     Callback::from(move |_: MouseEvent| {
         let modal: HtmlDialogElement = web_sys::window()
             .unwrap()
@@ -76,65 +90,41 @@ pub fn get_modal_close_callback(id: &String) -> Callback<MouseEvent> {
 
 fn get_buttons(props: &ModalProps) -> Html {
     match props.mode.clone() {
-        ButtonMode::Confirm(onclick) => {
-            let close = get_modal_close_callback(&props.id);
-            let text = onclick.0.clone();
-            let onclick = onclick.1.unwrap_or_else(|| Callback::noop());
-            let onclick = Callback::from(move |e: MouseEvent| {
-                onclick.emit(e.clone());
-                close.emit(e);
-            });
+        ButtonMode::Confirm(button) => {
+            let onclick = into_modal_onclick(button.onclick, &props.id);
             html! {
-                <button class="btn btn-primary" onclick={onclick}>{text}</button>
+                <button class="btn btn-primary" {onclick}>{&button.text}</button>
             }
         }
-        ButtonMode::ConfirmCancel(ok, cancel) => {
-            let close = get_modal_close_callback(&props.id);
-            let ok_text = ok.0.clone();
-            let ok = ok.1.unwrap_or_else(|| Callback::noop());
-            let ok = {
-                let close = close.clone();
-                Callback::from(move |e: MouseEvent| {
-                    ok.emit(e.clone());
-                    close.emit(e);
-                })
-            };
-            let cancel_text = cancel.0.clone();
-            let cancel = cancel.1.unwrap_or_else(|| Callback::noop());
-            let cancel = Callback::from(move |e: MouseEvent| {
-                cancel.emit(e.clone());
-                close.emit(e);
-            });
+        ButtonMode::ConfirmCancel(confirm_button, cancel_button) => {
+            let confirm_onclick = into_modal_onclick(confirm_button.onclick, &props.id);
+            let cancel_onclick = into_modal_onclick(cancel_button.onclick, &props.id);
             html! {
                 <>
-                <button class="btn btn-neutral" onclick={cancel}>{cancel_text}</button>
-                <button class="btn btn-primary" onclick={ok}>{ok_text}</button>
+                <button class="btn btn-neutral" onclick={cancel_onclick}>{&cancel_button.text}</button>
+                <button class="btn btn-primary" onclick={confirm_onclick}>{&confirm_button.text}</button>
                 </>
             }
         }
-        ButtonMode::RiskyCancel(risky, cancel) => {
-            let close = get_modal_close_callback(&props.id);
-            let risky_text = risky.0.clone();
-            let risky = risky.1.unwrap_or_else(|| Callback::noop());
-            let risky = {
-                let close = close.clone();
-                Callback::from(move |e: MouseEvent| {
-                    risky.emit(e.clone());
-                    close.emit(e);
-                })
-            };
-            let cancel_text = cancel.0.clone();
-            let cancel = cancel.1.unwrap_or_else(|| Callback::noop());
-            let cancel = Callback::from(move |e: MouseEvent| {
-                cancel.emit(e.clone());
-                close.emit(e);
-            });
+        ButtonMode::RiskyCancel(risky_button, cancel_button) => {
+            let risky_onclick = into_modal_onclick(risky_button.onclick, &props.id);
+            let cancel_onclick = into_modal_onclick(cancel_button.onclick, &props.id);
             html! {
                 <>
-                <button class="btn btn-neutral" onclick={cancel}>{cancel_text}</button>
-                <button class="btn btn-warning" onclick={risky}>{risky_text}</button>
+                <button class="btn btn-neutral" onclick={cancel_onclick}>{&cancel_button.text}</button>
+                <button class="btn btn-warning" onclick={risky_onclick}>{&risky_button.text}</button>
                 </>
             }
         }
+    }
+}
+
+fn into_modal_onclick(
+    onclick: Option<Callback<MouseEvent>>,
+    id: impl Into<String>,
+) -> Option<Callback<MouseEvent>> {
+    match onclick {
+        Some(onclick) => Some(onclick.merge(get_modal_close_callback(id.into()))),
+        None => Some(get_modal_close_callback(id.into())),
     }
 }
