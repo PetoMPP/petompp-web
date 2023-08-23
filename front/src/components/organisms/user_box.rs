@@ -1,6 +1,6 @@
 use crate::{
     async_mouse_event,
-    components::atoms::modal::{get_modal_open_callback, ButtonMode, Modal, ModalButton},
+    components::atoms::modal::{get_modal_open_callback, Buttons, Modal, ModalButton},
     models::user::{Role, User},
     router::Route,
     SessionStore, Width, WindowStore,
@@ -51,8 +51,9 @@ fn logout_button() -> Html {
         session_dispatch.reduce(|_| SessionStore { token: None, user: None }.into());
         history.push(&Route::Login);
     });
+    let buttons = Buttons::RiskyCancel(ModalButton::new("logout", Some(onclick)), ModalButton::new("cancel", None));
     html! {
-        <Modal id={ID} title={"Logout"} message={"Do you want to logout?"} mode={ButtonMode::RiskyCancel(ModalButton::new("logout", Some(onclick)), ModalButton::new("cancel", None))}>
+        <Modal id={ID} title={"Logout"} message={"Do you want to logout?"} {buttons}>
         <button onclick={get_modal_open_callback(ID)} class={"btn btn-warning btn-square p-1"}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <g>

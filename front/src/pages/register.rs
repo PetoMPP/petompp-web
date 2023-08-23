@@ -1,6 +1,6 @@
 use crate::{
     api, assign_value_event, async_mouse_event,
-    models::credentials::Credentials, pages::page_base::PageBase, router::Route,
+    models::credentials::Credentials, pages::page_base::PageBase, router::Route, components::atoms::modal::show_error,
 };
 use std::fmt::Display;
 use yew::prelude::*;
@@ -44,9 +44,8 @@ pub fn register() -> Html {
                         ref e if e.starts_with("Password") => error_state.set(Some(Error::Password(error))),
                         _ => error_state.set(Some(Error::Global(error))),
                     }
-                    _ => {
-                        error_state.set(Some(Error::Global("Unknown error".to_string())));
-                        gloo::console::error!(format!("Error: {}", error));
+                    e => {
+                        show_error(e.to_string());
                     }
                 }
             }
