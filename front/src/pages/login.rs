@@ -1,6 +1,6 @@
 use crate::{
     api, assign_value_event, async_mouse_event, models::credentials::Credentials,
-    pages::page_base::PageBase, router::Route, SessionStore,
+    pages::page_base::PageBase, router::Route, SessionStore, components::atoms::modal::show_error,
 };
 use yew::prelude::*;
 use yew_router::prelude::*;
@@ -24,8 +24,8 @@ pub fn login() -> Html {
             }
             Err(error) => match error {
                 api::client::Error::Endpoint(_, message) => error_state.set(Some(message)),
-                api::client::Error::Parse(message) => error_state.set(Some(message)),
-                api::client::Error::Network(message) => error_state.set(Some(message)),
+                api::client::Error::Parse(message) |
+                api::client::Error::Network(message) => show_error(message)
             },
         }
     });

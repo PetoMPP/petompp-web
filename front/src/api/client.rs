@@ -134,7 +134,7 @@ impl Client {
     }
 
     pub async fn delete_user(token: &str, id: i32) -> Result<(), Error> {
-        Self::send_json::<String>(
+        Self::send_json::<User>(
             Method::DELETE,
             format!("api/v1/users/{}", id).as_str(),
             Some(token),

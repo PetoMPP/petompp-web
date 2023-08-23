@@ -30,6 +30,25 @@ pub mod macros {
             }
         };
     }
+
+    #[macro_export]
+    macro_rules! handle_api_error {
+        ($error:ident, $session_dispatch: ident) => {
+            if let Some(error) = &*$error {
+                if let crate::api::client::Error::Endpoint(401..=403, _) = error {
+                    $session_dispatch.reduce(|_| {
+                        SessionStore {
+                            token: None,
+                            user: None,
+                        }
+                        .into()
+                    });
+                    return html! { <Redirect<Route> to={Route::Login} />};
+                }
+                show_error(error.to_string());
+            }
+        };
+    }
 }
 
 pub mod ext {
