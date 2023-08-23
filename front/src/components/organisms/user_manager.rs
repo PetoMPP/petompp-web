@@ -4,10 +4,10 @@ use yewdux::prelude::*;
 
 use crate::{
     api::client::Client,
-    components::atoms::modal::{get_modal_open_callback, ButtonMode, Modal, ModalButton},
+    components::atoms::modal::{get_modal_open_callback, Buttons, Modal, ModalButton, show_error},
     models::user::User,
     router::Route,
-    SessionStore,
+    SessionStore, handle_api_error,
 };
 #[function_component(UserManager)]
 pub fn user_manager() -> Html {
@@ -31,19 +31,7 @@ pub fn user_manager() -> Html {
             };
         })
     }
-    if let Some(error) = &*error_state {
-        if let crate::api::client::Error::Endpoint(401..=403, _) = error {
-            session_dispatch.reduce(|_| {
-                SessionStore {
-                    token: None,
-                    user: None,
-                }
-                .into()
-            });
-            return html! { <Redirect<Route> to={Route::Login} />};
-        }
-        return html! {<p class={"flex text-error text-xs ml-2 italic"}>{error}</p>};
-    }
+    handle_api_error!(error_state, session_dispatch);
     html! {
         <table class={"table"}>
             <thead>
@@ -103,24 +91,19 @@ fn user_row(props: &UserRowProps) -> Html {
             })
         })
     };
-    if let Some(crate::api::client::Error::Endpoint(401..=403, _)) = &*error_state {
-        session_dispatch.reduce(|_| {
-            SessionStore {
-                token: None,
-                user: None,
-            }
-            .into()
-        });
-        return html! { <Redirect<Route> to={Route::Login} />};
-    }
-    let activate_button = match props.user.confirmed {
+    handle_api_error!(error_state, session_dispatch);
+    let activate_button = match props.user.deleted_at.is_some() || props.user.confirmed {
         true => {
-            html! {<button onclick={activate} class={"btn btn-sm btn-success px-1 mr-1 btn-disabled aria-disabled"}>{"Activated"}</button>}
+            html! {<button class={"btn btn-sm btn-success px-1 mr-1 btn-disabled aria-disabled"}>{"Activated"}</button>}
         }
         false => {
             let id = format!("activate_modal_{}", props.user.id);
+            let buttons = Buttons::ConfirmCancel(
+                ModalButton::new("activate", Some(activate)),
+                ModalButton::new("cancel", None),
+            );
             html! {
-                <Modal id={id.clone()} title={"Activate"} message={"Do you want to activate this user?"} mode={ButtonMode::ConfirmCancel(ModalButton::new("activate", Some(activate)), ModalButton::new("cancel", None))}>
+                <Modal id={id.clone()} title={"Activate"} message={"Do you want to activate this user?"} {buttons}>
                     <button onclick={get_modal_open_callback(id)} class={"btn btn-sm btn-success px-1 mr-1"}>{"Activate"}</button>
                 </Modal>
             }
@@ -128,12 +111,16 @@ fn user_row(props: &UserRowProps) -> Html {
     };
     let delete_button = match props.user.deleted_at.is_some() {
         true => {
-            html! {<button onclick={delete} class={"btn btn-sm btn-warning px-1 mr-1 btn-disabled aria-disabled"}>{"Deleted"}</button>}
+            html! {<button class={"btn btn-sm btn-warning px-1 mr-1 btn-disabled aria-disabled"}>{"Deleted"}</button>}
         }
         false => {
             let id = format!("delete_modal_{}", props.user.id);
+            let buttons = Buttons::RiskyCancel(
+                ModalButton::new("delete", Some(delete)),
+                ModalButton::new("cancel", None),
+            );
             html! {
-                <Modal id={id.clone()} title={"Delete"} message={"Do you want to delete this user?"} mode={ButtonMode::RiskyCancel(ModalButton::new("delete", Some(delete)), ModalButton::new("cancel", None))}>
+                <Modal id={id.clone()} title={"Delete"} message={"Do you want to delete this user?"} {buttons}>
                     <button onclick={get_modal_open_callback(id)} class={"btn btn-sm btn-warning px-1 mr-1"}>{"Delete"}</button>
                 </Modal>
             }

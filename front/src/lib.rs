@@ -1,5 +1,5 @@
 use crate::{
-    components::organisms::header::Header,
+    components::{atoms::modal::ErrorModal, organisms::header::Header},
     router::{switch, Route},
 };
 use models::user::User;
@@ -78,12 +78,13 @@ pub fn app() -> Html {
     onwindowresize.forget();
     html! {
         <BrowserRouter>
-        <body class={"min-h-screen"}>
-            <Header />
-            <div class={"m-auto w-5/6 xl:w-2/3 flex flex-col items-center"}>
-                <Switch<Route> render={switch}/>
-            </div>
-        </body>
+            <body class={"min-h-screen"}>
+                <Header />
+                <div class={"m-auto w-5/6 xl:w-2/3 flex flex-col items-center"}>
+                    <Switch<Route> render={switch}/>
+                </div>
+            </body>
+            <ErrorModal />
         </BrowserRouter>
     }
 }
