@@ -6,7 +6,7 @@ use serde_json::Value;
 
 use crate::models::{credentials::Credentials, user::User};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Error {
     Endpoint(u16, String),
     Parse(String),
