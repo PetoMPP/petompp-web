@@ -1,51 +1,74 @@
 use crate::{
-    api, assign_value_event, async_mouse_event, models::credentials::Credentials,
-    pages::page_base::PageBase, router::Route, SessionStore, components::atoms::modal::show_error,
+    api, assign_value_event, components::atoms::modal::show_error,
+    models::credentials::Credentials, pages::page_base::PageBase, router::Route, SessionStore,
 };
-use yew::prelude::*;
+use yew::{platform::spawn_local, prelude::*};
 use yew_router::prelude::*;
 use yewdux::prelude::use_store;
 
 #[function_component(Login)]
 pub fn login() -> Html {
     let form_data = use_mut_ref(|| Credentials::default());
-    let error_state = use_state(|| Option::None);
+    let error_state = use_state_eq(|| Option::None);
     let history = use_navigator().unwrap();
     let (_, session_dispatch) = use_store::<SessionStore>();
 
     let onchange_username = assign_value_event!(form_data.name);
     let onchange_password = assign_value_event!(form_data.password);
-    let onclick = async_mouse_event!(form_data, error_state, history, session_dispatch {
-        match api::client::Client::login(form_data.borrow().clone()).await {
-            Ok(response) => {
-                session_dispatch.reduce(|_| SessionStore { token: Some(response.token), user: Some(response.user) }.into());
-                error_state.set(Option::None);
-                history.push(&Route::Home);
-            }
-            Err(error) => match error {
-                api::client::Error::Endpoint(_, message) => error_state.set(Some(message)),
-                api::client::Error::Parse(message) |
-                api::client::Error::Network(message) => show_error(message)
-            },
-        }
-    });
+    let onsubmit = {
+        let form_data = form_data.clone();
+        let error_state = error_state.clone();
+        let history = history.clone();
+        let session_dispatch = session_dispatch.clone();
+        Callback::from(move |e: SubmitEvent| {
+            e.prevent_default();
+            let form_data = form_data.clone();
+            let error_state = error_state.clone();
+            let history = history.clone();
+            let session_dispatch = session_dispatch.clone();
+            spawn_local(async move {
+                {
+                    match api::client::Client::login(form_data.borrow().clone()).await {
+                        Ok(response) => {
+                            session_dispatch.reduce(|_| {
+                                SessionStore {
+                                    token: Some(response.token),
+                                    user: Some(response.user),
+                                }
+                                .into()
+                            });
+                            error_state.set(Option::None);
+                            history.push(&Route::Home);
+                        }
+                        Err(error) => match error {
+                            api::client::Error::Endpoint(_, message) => {
+                                error_state.set(Some(message))
+                            }
+                            api::client::Error::Parse(message)
+                            | api::client::Error::Network(message) => show_error(message),
+                        },
+                    }
+                }
+            });
+        })
+    };
     html! {
         <PageBase>
-        <div class={"flex flex-col gap-2 w-5/6 lg:w-3/4 lg:w-1/2 m-auto"}>
-            <div class={"flex flex-row flex-wrap justify-between items-center mb-2"}>
-                <p class={"flex text-xl"}>{"Login"}</p>
-            </div>
-            <div class={"flex flex-row flex-wrap justify-between items-center mb-2"}>
-                <label class={"flex block text-gray-700 text-sm font-bold"}>{"Username"}</label>
-                { if let Some(error) = &(*error_state) { html!{<p class={"flex text-red-500 text-xs ml-2 italic"}>{error.clone()}</p>} } else { html!{} }}
-            </div>
-            <input class={"input"} placeholder={"Username.."} type={"text"} onchange={onchange_username}/>
-            <div class={"flex flex-row flex-wrap justify-between items-center"}>
-                <label class={"flex block text-gray-700 text-sm font-bold mb-2"}>{"Password"}</label>
-            </div>
-            <input class={"input"} placeholder={"Password.."} type={"password"} onchange={onchange_password}/>
-            <button class={"bg-cyan-300 hover:bg-cyan-400 text-gray-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"} {onclick}>{"Login"}</button>
-        </div>
+        <form class={"form-control m-auto w-5/6 lg:w-3/4 xl:w-1/2"} {onsubmit}>
+            <label class={"label"}>
+                <span class={"label-text text-lg lg:text-2xl"}>{"Login"}</span>
+                <span class={"label-text-alt text-warning lg:text-lg"}>{if let Some(error) = &(*error_state) {error.clone() } else { "".to_string() }}</span>
+            </label>
+            <label class={"label"}>
+                <span class={"label-text lg:text-lg"}>{"Username"}</span>
+            </label>
+            <input class={"input input-bordered"} placeholder={"Username.."} type={"text"} onchange={onchange_username}/>
+            <label class={"label"}>
+                <span class={"label-text lg:text-lg"}>{"Password"}</span>
+            </label>
+            <input class={"input input-bordered"} placeholder={"Password.."} type={"password"} onchange={onchange_password}/>
+            <button class={"btn btn-primary lg:text-xl mt-4"}>{"Register"}</button>
+        </form>
         </PageBase>
     }
 }

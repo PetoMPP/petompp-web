@@ -13,9 +13,9 @@ use crate::{
 pub fn user_manager() -> Html {
     let (session_store, session_dispatch) = use_store::<SessionStore>();
     let token = session_store.token.clone().unwrap_or_default();
-    let error_state = use_state(|| None);
-    let reload = use_state(|| true);
-    let user_data = use_state(|| vec![]);
+    let error_state = use_state_eq(|| None);
+    let reload = use_state_eq(|| true);
+    let user_data = use_state_eq(|| vec![]);
     let mark_to_reload = {
         let reload = reload.clone();
         Callback::from(move |_| reload.set(true))
@@ -57,7 +57,7 @@ pub struct UserRowProps {
 #[function_component(UserRow)]
 fn user_row(props: &UserRowProps) -> Html {
     let (session_store, session_dispatch) = use_store::<SessionStore>();
-    let error_state = use_state(|| None);
+    let error_state = use_state_eq(|| None);
     let token = session_store.token.clone().unwrap_or_default();
     let activate = {
         let error_state = error_state.clone();
