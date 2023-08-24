@@ -12,6 +12,7 @@ opt-level = "s"
 chrono = {version = "0.4", features = ["serde"]}
 gloo = "0.10"
 lazy_static = "1.4"
+markdown = "1.0.0-alpha.12"
 reqwasm = "0.5"
 serde = "1.0"
 serde_json = "1.0"
