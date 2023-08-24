@@ -67,7 +67,7 @@ pub fn login() -> Html {
                 <span class={"label-text lg:text-lg"}>{"Password"}</span>
             </label>
             <input class={"input input-bordered"} placeholder={"Password.."} type={"password"} onchange={onchange_password}/>
-            <button class={"btn btn-primary lg:text-xl mt-4"}>{"Register"}</button>
+            <button class={"btn btn-primary lg:text-xl mt-4"}>{"Login"}</button>
         </form>
         </PageBase>
     }
