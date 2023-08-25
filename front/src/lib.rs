@@ -80,7 +80,7 @@ pub fn app() -> Html {
         <BrowserRouter>
             <body class={"min-h-screen"}>
                 <Header />
-                <img src={"/img/coast.jpg"} class={"w-full w-max-full h-max-full opacity-40 my-4 h-60"} />
+                <img src={"/img/coast.jpg"} class={"w-full w-max-full h-max-full opacity-40 my-4 h-90"} />
                 <div class={"m-auto w-5/6 xl:w-2/3 flex flex-col items-center"}>
                     <Switch<Route> render={switch}/>
                 </div>
