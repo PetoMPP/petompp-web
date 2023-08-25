@@ -8,7 +8,7 @@ module.exports = {
       }
     }
   },
-  plugins: [require('tailwindcss-animated'), require("daisyui")],
+  plugins: [require('tailwindcss-animated'), require('@tailwindcss/typography'), require("daisyui")],
   daisyui: {
     themes: [
       {
