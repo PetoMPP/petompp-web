@@ -1,5 +1,5 @@
 pub mod header;
-pub mod markdown;
+pub mod markdown_editor;
 pub mod menu;
 pub mod navbar;
 pub mod user_box;
