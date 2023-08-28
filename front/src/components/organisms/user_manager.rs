@@ -1,14 +1,18 @@
+use crate::{
+    api::client::Client,
+    async_event,
+    components::atoms::modal::{
+        show_error, show_modal_callback, Buttons, ModalButton, ModalData, ModalStore,
+    },
+    handle_api_error,
+    models::user::User,
+    router::Route,
+    SessionStore,
+};
 use yew::{platform::spawn_local, prelude::*};
 use yew_router::prelude::*;
 use yewdux::prelude::*;
 
-use crate::{
-    api::client::Client,
-    components::atoms::modal::{get_modal_open_callback, Buttons, Modal, ModalButton, show_error},
-    models::user::User,
-    router::Route,
-    SessionStore, handle_api_error,
-};
 #[function_component(UserManager)]
 pub fn user_manager() -> Html {
     let (session_store, session_dispatch) = use_store::<SessionStore>();
@@ -56,86 +60,92 @@ pub struct UserRowProps {
 
 #[function_component(UserRow)]
 fn user_row(props: &UserRowProps) -> Html {
-    let (session_store, session_dispatch) = use_store::<SessionStore>();
-    let error_state = use_state_eq(|| None);
-    let token = session_store.token.clone().unwrap_or_default();
-    let activate = {
-        let error_state = error_state.clone();
-        let props = props.clone();
-        let token = token.clone();
-        Callback::from(move |_| {
-            let error_state = error_state.clone();
-            let props = props.clone();
-            let token = token.clone();
-            spawn_local(async move {
-                match Client::activate_user(&token, props.user.id).await {
-                    Ok(()) => props.reload.emit(()),
-                    Err(error) => error_state.set(Some(error)),
-                }
-            })
-        })
-    };
-    let delete = {
-        let error_state = error_state.clone();
-        let props = props.clone();
-        let token = token.clone();
-        Callback::from(move |_| {
-            let error_state = error_state.clone();
-            let props = props.clone();
-            let token = token.clone();
-            spawn_local(async move {
-                match Client::delete_user(&token, props.user.id).await {
-                    Ok(()) => props.reload.emit(()),
-                    Err(error) => error_state.set(Some(error)),
-                }
-            })
-        })
-    };
-    handle_api_error!(error_state, session_dispatch);
-    let activate_button = match props.user.deleted_at.is_some() || props.user.confirmed {
-        true => {
-            html! {<button class={"btn btn-sm btn-success px-1 mr-1 btn-disabled aria-disabled"}>{"Activated"}</button>}
-        }
-        false => {
-            let id = format!("activate_modal_{}", props.user.id);
-            let buttons = Buttons::ConfirmCancel(
-                ModalButton::new("activate", Some(activate)),
-                ModalButton::new("cancel", None),
-            );
-            html! {
-                <Modal id={id.clone()} title={"Activate"} message={"Do you want to activate this user?"} {buttons}>
-                    <button onclick={get_modal_open_callback(id)} class={"btn btn-sm btn-success px-1 mr-1"}>{"Activate"}</button>
-                </Modal>
-            }
-        }
-    };
-    let delete_button = match props.user.deleted_at.is_some() {
-        true => {
-            html! {<button class={"btn btn-sm btn-warning px-1 mr-1 btn-disabled aria-disabled"}>{"Deleted"}</button>}
-        }
-        false => {
-            let id = format!("delete_modal_{}", props.user.id);
-            let buttons = Buttons::RiskyCancel(
-                ModalButton::new("delete", Some(delete)),
-                ModalButton::new("cancel", None),
-            );
-            html! {
-                <Modal id={id.clone()} title={"Delete"} message={"Do you want to delete this user?"} {buttons}>
-                    <button onclick={get_modal_open_callback(id)} class={"btn btn-sm btn-warning px-1 mr-1"}>{"Delete"}</button>
-                </Modal>
-            }
-        }
-    };
     html! {
         <tr>
             <td>{&props.user.id}</td>
             <td class={"break-all"}>{&props.user.name}</td>
             <td>
                 <div class="flex flex-row">
-                    {activate_button}
-                    {delete_button}
+                    <ActivateButton user={props.user.clone()} reload={props.reload.clone()} />
+                    <DeleteButton user={props.user.clone()} reload={props.reload.clone()} />
                 </div>
             </td>
         </tr>
+    }
+}
+
+#[function_component(ActivateButton)]
+fn activate_button(props: &UserRowProps) -> Html {
+    let (session_store, session_dispatch) = use_store::<SessionStore>();
+    let (_, dispatch) = use_store::<ModalStore>();
+    let error_state = use_state_eq(|| None);
+    let token = session_store.token.clone().unwrap_or_default();
+    let onclick = async_event!(props, token, error_state, {
+        match Client::activate_user(&token, props.user.id).await {
+            Ok(()) => props.reload.emit(()),
+            Err(error) => error_state.set(Some(error)),
+        }
+    });
+    handle_api_error!(error_state, session_dispatch);
+    let (onclick, class) = match props.user.deleted_at.is_some() || props.user.confirmed {
+        true => (
+            None,
+            "btn btn-sm btn-success px-1 mr-1 btn-disabled aria-disabled",
+        ),
+        false => (
+            Some(show_modal_callback(
+                ModalData {
+                    title: "Activate".into(),
+                    message: format!("Do you want to activate user {}?", props.user.name),
+                    buttons: Buttons::ConfirmCancel(
+                        ModalButton::new("activate", Some(onclick)),
+                        ModalButton::new("cancel", None),
+                    ),
+                },
+                dispatch.clone(),
+            )),
+            "btn btn-sm btn-success px-1 mr-1",
+        ),
+    };
+    html! {
+        <button {class} {onclick}>{"Activate"}</button>
+    }
+}
+
+#[function_component(DeleteButton)]
+fn delete_button(props: &UserRowProps) -> Html {
+    let (session_store, session_dispatch) = use_store::<SessionStore>();
+    let (_, dispatch) = use_store::<ModalStore>();
+    let error_state = use_state_eq(|| None);
+    let token = session_store.token.clone().unwrap_or_default();
+    let onclick = async_event!(props, token, error_state, {
+        match Client::delete_user(&token, props.user.id).await {
+            Ok(()) => props.reload.emit(()),
+            Err(error) => error_state.set(Some(error)),
+        }
+    });
+    handle_api_error!(error_state, session_dispatch);
+    let (onclick, class) = match props.user.deleted_at.is_some() {
+        true => (
+            None,
+            "btn btn-sm btn-warning px-1 mr-1 btn-disabled aria-disabled",
+        ),
+        false => (
+            Some(show_modal_callback(
+                ModalData {
+                    title: "Delete".into(),
+                    message: format!("Do you want to delete user {}?", props.user.name),
+                    buttons: Buttons::RiskyCancel(
+                        ModalButton::new("delete", Some(onclick)),
+                        ModalButton::new("cancel", None),
+                    ),
+                },
+                dispatch.clone(),
+            )),
+            "btn btn-sm btn-warning px-1 mr-1",
+        ),
+    };
+    html! {
+        <button {class} {onclick}>{"Delete"}</button>
     }
 }

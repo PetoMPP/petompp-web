@@ -1,5 +1,5 @@
 use crate::{
-    components::{atoms::modal::ErrorModal, organisms::header::Header},
+    components::{atoms::modal::{ErrorModal, Modal}, organisms::header::Header},
     router::{switch, Route},
 };
 use models::user::User;
@@ -85,6 +85,7 @@ pub fn app() -> Html {
                     <Switch<Route> render={switch}/>
                 </div>
             </body>
+            <Modal />
             <ErrorModal />
         </BrowserRouter>
     }
