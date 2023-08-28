@@ -1,5 +1,5 @@
 use crate::{
-    api, assign_value_event, components::atoms::modal::show_error,
+    api, assign_value_event, async_event, components::atoms::modal::show_error,
     models::credentials::Credentials, pages::page_base::PageBase, router::Route, SessionStore,
 };
 use yew::{platform::spawn_local, prelude::*};
@@ -15,43 +15,34 @@ pub fn login() -> Html {
 
     let onchange_username = assign_value_event!(form_data.name);
     let onchange_password = assign_value_event!(form_data.password);
-    let onsubmit = {
-        let form_data = form_data.clone();
-        let error_state = error_state.clone();
-        let history = history.clone();
-        let session_dispatch = session_dispatch.clone();
-        Callback::from(move |e: SubmitEvent| {
-            e.prevent_default();
-            let form_data = form_data.clone();
-            let error_state = error_state.clone();
-            let history = history.clone();
-            let session_dispatch = session_dispatch.clone();
-            spawn_local(async move {
-                {
-                    match api::client::Client::login(form_data.borrow().clone()).await {
-                        Ok(response) => {
-                            session_dispatch.reduce(|_| {
-                                SessionStore {
-                                    token: Some(response.token),
-                                    user: Some(response.user),
-                                }
-                                .into()
-                            });
-                            error_state.set(Option::None);
-                            history.push(&Route::Home);
+    let onsubmit = async_event!(
+        [prevent SubmitEvent],
+        form_data,
+        error_state,
+        history,
+        session_dispatch,
+        {
+            match api::client::Client::login(form_data.borrow().clone()).await {
+                Ok(response) => {
+                    session_dispatch.reduce(|_| {
+                        SessionStore {
+                            token: Some(response.token),
+                            user: Some(response.user),
                         }
-                        Err(error) => match error {
-                            api::client::Error::Endpoint(_, message) => {
-                                error_state.set(Some(message))
-                            }
-                            api::client::Error::Parse(message)
-                            | api::client::Error::Network(message) => show_error(message),
-                        },
-                    }
+                        .into()
+                    });
+                    error_state.set(Option::None);
+                    history.push(&Route::Home);
                 }
-            });
-        })
-    };
+                Err(error) => match error {
+                    api::client::Error::Endpoint(_, message) => error_state.set(Some(message)),
+                    api::client::Error::Parse(message) | api::client::Error::Network(message) => {
+                        show_error(message)
+                    }
+                },
+            }
+        }
+    );
     html! {
         <PageBase>
         <form class={"form-control m-auto w-5/6 lg:w-3/4 xl:w-1/2"} {onsubmit}>
