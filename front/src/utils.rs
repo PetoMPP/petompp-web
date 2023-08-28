@@ -13,15 +13,31 @@ pub mod macros {
 
     /// This macro is used to create a MouseEvent callback that will spawn an async block on the local thread.
     #[macro_export]
-    macro_rules! async_mouse_event {
-        ($($dep:ident),* $block:block) => {
+    macro_rules! async_event {
+        ($($dep:ident),*, $block:block) => {
             {
                 use yew::prelude::*;
                 use yew::platform::spawn_local;
                 $(
                     let $dep = $dep.clone();
                 )*
-                Callback::from(move |_: MouseEvent| {
+                Callback::from(move |_| {
+                    $(
+                        let $dep = $dep.clone();
+                    )*
+                    spawn_local(async move {$block});
+                })
+            }
+        };
+        ([prevent $event_type:ty], $($dep:ident),*, $block:block) => {
+            {
+                use yew::prelude::*;
+                use yew::platform::spawn_local;
+                $(
+                    let $dep = $dep.clone();
+                )*
+                Callback::from(move |e: $event_type| {
+                    e.prevent_default();
                     $(
                         let $dep = $dep.clone();
                     )*

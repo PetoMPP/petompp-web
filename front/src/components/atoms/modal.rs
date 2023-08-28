@@ -1,7 +1,9 @@
+use deref_derive::{Deref, DerefMut};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlDialogElement;
 use yew::prelude::*;
 use yew_router::prelude::*;
+use yewdux::prelude::*;
 
 use crate::{router::Route, utils::ext::Mergable};
 
@@ -27,26 +29,59 @@ pub enum Buttons {
     RiskyCancel(ModalButton, ModalButton),
 }
 
+impl Default for Buttons {
+    fn default() -> Self {
+        Self::Confirm(ModalButton::new("OK", None))
+    }
+}
+
+#[derive(PartialEq, Clone, Store, Default, Deref, DerefMut)]
+pub struct ModalStore(pub ModalData);
+
+#[derive(PartialEq, Clone, Default)]
+pub struct ModalData {
+    pub title: String,
+    pub message: String,
+    pub buttons: Buttons,
+}
+
+const MODAL_ID: &str = "modal";
+
+pub fn show_modal(data: ModalData, dispatch: Dispatch<ModalStore>) {
+    dispatch.reduce(|_| ModalStore(data).into());
+    let modal: HtmlDialogElement = web_sys::window()
+        .unwrap()
+        .document()
+        .unwrap()
+        .get_element_by_id(MODAL_ID)
+        .unwrap()
+        .unchecked_into();
+    modal.show_modal().unwrap();
+}
+
+pub fn show_modal_callback<T>(data: ModalData, dispatch: Dispatch<ModalStore>) -> Callback<T> {
+    Callback::from(move |_| show_modal(data.clone(), dispatch.clone()))
+}
+
 #[derive(PartialEq, Properties)]
 pub struct ModalProps {
     pub id: String,
     pub title: String,
     pub message: String,
     pub buttons: Buttons,
-    pub children: Children,
 }
 
 #[function_component(Modal)]
-pub fn modal(props: &ModalProps) -> Html {
+pub fn modal() -> Html {
+    let (store, _) = use_store::<ModalStore>();
     html! {
         <>
-        {props.children.clone()}
-        <dialog id={props.id.clone()} class={"modal"}>
+        <dialog id={MODAL_ID} class={"modal z-80"}>
         <form method={"dialog"} class={"modal-box"}>
-            <h3 class={"font-bold text-lg"}>{&props.title}</h3>
-            <p class={"py-4"}>{{&props.message}}</p>
+            <h3 class={"font-bold text-lg"}>{&store.title}</h3>
+            <p class={"py-4"}>{&store.message}</p>
             <div class={"flex flex-row-reverse justify-between"}>
-                {get_buttons(props)}
+                {get_buttons(&store.buttons)}
             </div>
         </form>
         </dialog>
@@ -70,12 +105,12 @@ pub fn error_modal() -> Html {
     let navigator = use_navigator().unwrap();
     html! {
         <>
-        <dialog id={ERROR_MODAL_ID} class={"modal"}>
+        <dialog id={ERROR_MODAL_ID} class={"modal z-100"}>
         <form method={"dialog"} class={"modal-box bg-warning text-warning-content"}>
             <h3 class={"font-bold text-lg"}>{"An error has occured!"}</h3>
             <p id={ERROR_MODAL_MSG_ID} class={"py-4"}></p>
             <div class={"flex flex-row-reverse justify-between"}>
-                <button class="btn btn-error" onclick={Callback::from(move |_| navigator.push(&Route::Home)).merge(get_modal_close_callback(ERROR_MODAL_ID))}>{"OK"}</button>
+                <button class="btn btn-error" onclick={Callback::from(move |_| navigator.push(&Route::Home)).merge(get_error_close_callback())}>{"OK"}</button>
             </div>
         </form>
         </dialog>
@@ -103,22 +138,16 @@ pub fn show_error(msg: impl Into<String>) {
     modal.show_modal().unwrap();
 }
 
-pub fn get_modal_open_callback(id: impl Into<String>) -> Callback<MouseEvent> {
-    let id: String = id.into();
-    Callback::from(move |_: MouseEvent| {
-        let modal: HtmlDialogElement = web_sys::window()
-            .unwrap()
-            .document()
-            .unwrap()
-            .get_element_by_id(id.as_str())
-            .unwrap()
-            .unchecked_into();
-        modal.show_modal().unwrap();
-    })
+pub fn get_error_close_callback() -> Callback<MouseEvent> {
+    get_close_callback(ERROR_MODAL_ID)
 }
 
-pub fn get_modal_close_callback(id: impl Into<String>) -> Callback<MouseEvent> {
-    let id = id.into();
+pub fn get_modal_close_callback() -> Callback<MouseEvent> {
+    get_close_callback(MODAL_ID)
+}
+
+fn get_close_callback(id: &str) -> Callback<MouseEvent> {
+    let id = id.to_string();
     Callback::from(move |_: MouseEvent| {
         let modal: HtmlDialogElement = web_sys::window()
             .unwrap()
@@ -131,17 +160,17 @@ pub fn get_modal_close_callback(id: impl Into<String>) -> Callback<MouseEvent> {
     })
 }
 
-fn get_buttons(props: &ModalProps) -> Html {
-    match props.buttons.clone() {
+fn get_buttons(buttons: &Buttons) -> Html {
+    match buttons.clone() {
         Buttons::Confirm(button) => {
-            let onclick = into_modal_onclick(button.onclick, &props.id);
+            let onclick = into_modal_onclick(button.onclick);
             html! {
                 <button class="btn btn-primary" {onclick}>{&button.text}</button>
             }
         }
         Buttons::ConfirmCancel(confirm_button, cancel_button) => {
-            let confirm_onclick = into_modal_onclick(confirm_button.onclick, &props.id);
-            let cancel_onclick = into_modal_onclick(cancel_button.onclick, &props.id);
+            let confirm_onclick = into_modal_onclick(confirm_button.onclick);
+            let cancel_onclick = into_modal_onclick(cancel_button.onclick);
             html! {
                 <>
                 <button class="btn btn-neutral" onclick={cancel_onclick}>{&cancel_button.text}</button>
@@ -150,8 +179,8 @@ fn get_buttons(props: &ModalProps) -> Html {
             }
         }
         Buttons::RiskyCancel(risky_button, cancel_button) => {
-            let risky_onclick = into_modal_onclick(risky_button.onclick, &props.id);
-            let cancel_onclick = into_modal_onclick(cancel_button.onclick, &props.id);
+            let risky_onclick = into_modal_onclick(risky_button.onclick);
+            let cancel_onclick = into_modal_onclick(cancel_button.onclick);
             html! {
                 <>
                 <button class="btn btn-neutral" onclick={cancel_onclick}>{&cancel_button.text}</button>
@@ -162,12 +191,9 @@ fn get_buttons(props: &ModalProps) -> Html {
     }
 }
 
-fn into_modal_onclick(
-    onclick: Option<Callback<MouseEvent>>,
-    id: impl Into<String>,
-) -> Option<Callback<MouseEvent>> {
+fn into_modal_onclick(onclick: Option<Callback<MouseEvent>>) -> Option<Callback<MouseEvent>> {
     match onclick {
-        Some(onclick) => Some(onclick.merge(get_modal_close_callback(id.into()))),
-        None => Some(get_modal_close_callback(id.into())),
+        Some(onclick) => Some(onclick.merge(get_modal_close_callback())),
+        None => Some(get_modal_close_callback()),
     }
 }
