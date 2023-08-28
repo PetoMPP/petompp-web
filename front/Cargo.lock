@@ -183,6 +183,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "deref-derive"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4255bb7dd538590188bd0aea52e48bd699b19bd90b0d069ec2ced8461fe23273"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "equivalent"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -844,6 +855,7 @@ name = "petompp-web-front"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "deref-derive",
  "gloo 0.10.0",
  "lazy_static",
  "markdown",

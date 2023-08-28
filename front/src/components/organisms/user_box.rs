@@ -1,6 +1,6 @@
 use crate::{
-    async_mouse_event,
-    components::atoms::modal::{get_modal_open_callback, Buttons, Modal, ModalButton},
+    async_event,
+    components::atoms::modal::{show_modal_callback, Buttons, ModalButton, ModalData, ModalStore},
     models::user::{Role, User},
     router::Route,
     SessionStore, Width, WindowStore,
@@ -44,17 +44,26 @@ fn login_button() -> Html {
 
 #[function_component(LogoutButton)]
 fn logout_button() -> Html {
-    const ID: &str = "logout_modal";
     let (_, session_dispatch) = use_store::<SessionStore>();
+    let (_, dispatch) = use_store::<ModalStore>();
     let history = use_navigator().unwrap();
-    let onclick = async_mouse_event!(session_dispatch, history {
-        session_dispatch.reduce(|_| SessionStore { token: None, user: None }.into());
+    let onclick = async_event!(session_dispatch, history, {
+        session_dispatch.reduce(|_| SessionStore::default().into());
         history.push(&Route::Login);
     });
-    let buttons = Buttons::RiskyCancel(ModalButton::new("logout", Some(onclick)), ModalButton::new("cancel", None));
+    let onclick = show_modal_callback(
+        ModalData {
+            title: "Logout".to_string(),
+            message: "Do you want to logout?".to_string(),
+            buttons: Buttons::RiskyCancel(
+                ModalButton::new("logout", Some(onclick)),
+                ModalButton::new("cancel", None),
+            ),
+        },
+        dispatch,
+    );
     html! {
-        <Modal id={ID} title={"Logout"} message={"Do you want to logout?"} {buttons}>
-        <button onclick={get_modal_open_callback(ID)} class={"btn btn-warning btn-square p-1"}>
+        <button {onclick} class={"btn btn-warning btn-square p-1"}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <g>
                 <path fill="none" d="M0 0h24v24H0z"/>
@@ -62,7 +71,6 @@ fn logout_button() -> Html {
                 </g>
             </svg>
         </button>
-        </Modal>
     }
 }
 
