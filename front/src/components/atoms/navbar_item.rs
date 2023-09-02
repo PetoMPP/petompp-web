@@ -23,10 +23,9 @@ pub fn navbar_item(props: &NavbarItemProps) -> Html {
     let mut class = classes!(
         "btn",
         "btn-neutral",
-        "rounded-none",
         match props.pos {
-        Pos::Top => "rounded-b-lg",
-        Pos::Left => "rounded-r-lg"
+        Pos::Top => "rounded-t-none",
+        Pos::Left => "rounded-l-none"
     });
     if route == curr_route {
         class.push("btn-active");

@@ -12,12 +12,16 @@ module.exports = {
   daisyui: {
     themes: [
       {
-        aqua: {
-          ...require("daisyui/src/theming/themes")["[data-theme=aqua]"],
+        winter: {
+          ...require("daisyui/src/theming/themes")["[data-theme=winter]"],
+        },
+        night: {
+          ...require("daisyui/src/theming/themes")["[data-theme=night]"],
           "primary": "#38bdf8"
-        }
+        },
       }
     ],
+    darkTheme: "night",
   },
 }
 

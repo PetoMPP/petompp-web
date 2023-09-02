@@ -6,7 +6,7 @@ use crate::pages::{
     login::Login,
     not_found::NotFound,
     projects::Projects,
-    register::Register,
+    register::Register, editor::Editor,
 };
 use std::fmt::Display;
 use yew::prelude::*;
@@ -30,6 +30,8 @@ pub enum Route {
     AdminPanelRoot,
     #[at("/admin/*")]
     AdminPanel,
+    #[at("/editor/:key/:lang")]
+    Editor { key: String, lang: String },
     #[not_found]
     #[at("/404")]
     NotFound,
@@ -63,6 +65,7 @@ pub fn switch(route: Route) -> Html {
         Route::AdminPanelRoot | Route::AdminPanel => {
             html! { <Switch<AdminRoute> render={admin_switch} />}
         }
+        Route::Editor { key, lang } => html! { <Editor reskey={key} lang={lang} />},
         Route::NotFound => html! {  <NotFound />},
     }
 }
