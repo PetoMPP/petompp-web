@@ -4,7 +4,7 @@ use reqwasm::http::*;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::models::{credentials::Credentials, user::User};
+use crate::models::{credentials::Credentials, user::User, resource_data::ResourceData};
 
 #[derive(Debug, PartialEq)]
 pub enum Error {
@@ -142,5 +142,32 @@ impl Client {
         )
         .await
         .map(|_| ())
+    }
+
+    pub async fn get_resource(key: &str, lang: &str) -> Result<String, Error> {
+        Self::send_json(
+            Method::GET,
+            format!("api/v1/res/{}?lang={}", key, lang).as_str(),
+            None,
+            Option::<&String>::None,
+        )
+        .await
+    }
+
+    pub async fn update_resource(
+        token: &str,
+        key: &str,
+        lang: &str,
+        value: &str,
+    ) -> Result<(), Error> {
+        let resource = ResourceData::new_from_lang(key, lang, value)?;
+        Self::send_json(
+            Method::POST,
+            format!("api/v1/res/{}", key).as_str(),
+            Some(token),
+            Some(&resource),
+        )
+        .await
+        .map(|_: ResourceData| ())
     }
 }

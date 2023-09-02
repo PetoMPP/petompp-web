@@ -50,6 +50,9 @@ pub mod macros {
     #[macro_export]
     macro_rules! handle_api_error {
         ($error:ident, $session_dispatch: ident) => {
+            use crate::router::Route;
+            use crate::components::atoms::modal::show_error;
+            use yew_router::prelude::*;
             if let Some(error) = &*$error {
                 if let crate::api::client::Error::Endpoint(401..=403, _) = error {
                     $session_dispatch.reduce(|_| {

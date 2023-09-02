@@ -5,7 +5,7 @@ pub struct MarkdownDisplayProps {
     pub markdown: String,
 }
 
-#[function_component(MarkdownDisplay)]
+#[function_component(Markdown)]
 pub fn markdown_display(props: &MarkdownDisplayProps) -> Html {
     let html = markdown::to_html_with_options(
         props.markdown.as_str(),
