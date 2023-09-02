@@ -1,16 +1,12 @@
 use crate::{
     api::client::Client,
     async_event,
-    components::atoms::modal::{
-        show_error, show_modal_callback, Buttons, ModalButton, ModalData, ModalStore,
-    },
+    components::atoms::modal::{show_modal_callback, Buttons, ModalButton, ModalData, ModalStore},
     handle_api_error,
     models::user::User,
-    router::Route,
     SessionStore,
 };
 use yew::{platform::spawn_local, prelude::*};
-use yew_router::prelude::*;
 use yewdux::prelude::*;
 
 #[function_component(UserManager)]
