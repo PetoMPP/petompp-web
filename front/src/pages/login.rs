@@ -2,7 +2,7 @@ use crate::{
     api, assign_value_event, async_event, components::atoms::modal::show_error,
     models::credentials::Credentials, pages::page_base::PageBase, router::Route, SessionStore,
 };
-use yew::{platform::spawn_local, prelude::*};
+use yew::prelude::*;
 use yew_router::prelude::*;
 use yewdux::prelude::use_store;
 
