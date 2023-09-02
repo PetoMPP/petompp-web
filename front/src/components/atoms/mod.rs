@@ -1,3 +1,4 @@
+pub mod flag;
 pub mod link;
 pub mod logo;
 pub mod markdown;
