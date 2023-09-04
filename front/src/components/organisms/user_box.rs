@@ -47,7 +47,7 @@ fn logout_button() -> Html {
     let (_, session_dispatch) = use_store::<SessionStore>();
     let (_, dispatch) = use_store::<ModalStore>();
     let history = use_navigator().unwrap();
-    let onclick = async_event!(session_dispatch, history, {
+    let onclick = async_event!(|session_dispatch, history| {
         session_dispatch.reduce(|_| SessionStore::default().into());
         history.push(&Route::Login);
     });

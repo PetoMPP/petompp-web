@@ -76,7 +76,7 @@ fn activate_button(props: &UserRowProps) -> Html {
     let (_, dispatch) = use_store::<ModalStore>();
     let error_state = use_state_eq(|| None);
     let token = session_store.token.clone().unwrap_or_default();
-    let onclick = async_event!(props, token, error_state, {
+    let onclick = async_event!(|props, token, error_state| {
         match Client::activate_user(&token, props.user.id).await {
             Ok(()) => props.reload.emit(()),
             Err(error) => error_state.set(Some(error)),
@@ -114,7 +114,7 @@ fn delete_button(props: &UserRowProps) -> Html {
     let (_, dispatch) = use_store::<ModalStore>();
     let error_state = use_state_eq(|| None);
     let token = session_store.token.clone().unwrap_or_default();
-    let onclick = async_event!(props, token, error_state, {
+    let onclick = async_event!(|props, token, error_state| {
         match Client::delete_user(&token, props.user.id).await {
             Ok(()) => props.reload.emit(()),
             Err(error) => error_state.set(Some(error)),
