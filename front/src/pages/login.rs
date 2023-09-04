@@ -16,12 +16,7 @@ pub fn login() -> Html {
     let onchange_username = assign_value_event!(form_data.name);
     let onchange_password = assign_value_event!(form_data.password);
     let onsubmit = async_event!(
-        [prevent SubmitEvent],
-        form_data,
-        error_state,
-        history,
-        session_dispatch,
-        {
+        [prevent SubmitEvent] |form_data, error_state, history, session_dispatch| {
             match api::client::Client::login(form_data.borrow().clone()).await {
                 Ok(response) => {
                     session_dispatch.reduce(|_| {

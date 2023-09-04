@@ -1,7 +1,4 @@
-use crate::components::editor::{
-    data::{get_or_create_state, Store},
-    editor::EditorProps,
-};
+use crate::{components::editor::{data::Store, editor::InnerProps}, use_effect_deps};
 use wasm_bindgen::JsCast;
 use web_sys::{Element, HtmlInputElement};
 use yew::prelude::*;
@@ -10,16 +7,11 @@ use yewdux::prelude::*;
 const TEXTAREA_ID: &str = "editor-textarea";
 
 #[function_component(Editor)]
-pub fn editor(props: &EditorProps) -> Html {
-    let (store, dispatch) = use_store::<Store>();
-    let state = get_or_create_state(&props.reskey, &store, dispatch.clone());
-    use_effect_with_deps(
-        move |value| {
-            set_textarea_text(value.clone());
-            || {}
-        },
-        state.value.clone(),
-    );
+pub fn editor(props: &InnerProps) -> Html {
+    let (_, dispatch) = use_store::<Store>();
+    use_effect_deps!(|props| {
+        set_textarea_text(props.state.value.clone());
+    });
     let onchange = {
         let dispatch = dispatch.clone();
         let props = props.clone();
@@ -27,7 +19,7 @@ pub fn editor(props: &EditorProps) -> Html {
             let props = props.clone();
             let element: HtmlInputElement = e.target_unchecked_into();
             dispatch.reduce_mut(|s| {
-                s.values.get_mut(&props.reskey.to_string()).unwrap().value = element.value();
+                s.get_state_mut(&props.reskey).unwrap().value = element.value();
             });
         })
     };
@@ -63,7 +55,7 @@ pub fn editor(props: &EditorProps) -> Html {
             let element: HtmlInputElement = e.target_unchecked_into();
             set_textarea_height(&element);
             dispatch.reduce_mut(|s| {
-                s.values.get_mut(&props.reskey.to_string()).unwrap().value = element.value();
+                s.get_state_mut(&props.reskey).unwrap().value = element.value();
             });
         })
     };
