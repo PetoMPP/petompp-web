@@ -1,11 +1,29 @@
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, rc::Rc, fmt::Display};
+use std::{collections::HashMap, fmt::Display};
 use yewdux::prelude::*;
 
 #[derive(Default, PartialEq, Clone, Debug, Store, Serialize, Deserialize)]
 #[store(storage = "local", storage_tab_sync)]
 pub struct Store {
-    pub values: HashMap<String, State>,
+    values: HashMap<String, State>,
+}
+
+impl Store {
+    pub fn get_state<'a>(&'a self, key: &Key) -> Option<&'a State> {
+        self.values.get(&key.to_string())
+    }
+
+    pub fn get_state_mut<'a>(&'a mut self, key: &Key) -> Option<&'a mut State> {
+        self.values.get_mut(&key.to_string())
+    }
+
+    pub fn remove_state(&mut self, key: &Key) {
+        self.values.remove(&key.to_string());
+    }
+
+    pub fn set_state(&mut self, key: &Key, state: State) {
+        self.values.insert(key.to_string(), state);
+    }
 }
 
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
@@ -23,27 +41,5 @@ pub struct Key {
 impl Display for Key {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!("{}{}", self.reskey, self.lang))
-    }
-}
-
-pub fn get_or_create_state(
-    key: &Key,
-    editor_store: &Rc<Store>,
-    editor_dispatch: Dispatch<Store>,
-) -> State {
-    gloo::console::log!(editor_store.values.len());
-    match editor_store.values.get(&key.to_string()) {
-        Some(s) => {
-            gloo::console::log!("found state");
-            s.clone()
-        }
-        None => {
-            gloo::console::log!("creating state");
-            let state = State::default();
-            editor_dispatch.reduce_mut(|s| {
-                s.values.insert(key.to_string(), state.clone());
-            });
-            state
-        }
     }
 }

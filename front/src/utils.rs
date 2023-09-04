@@ -11,10 +11,10 @@ pub mod macros {
         }};
     }
 
-    /// This macro is used to create a MouseEvent callback that will spawn an async block on the local thread.
+    /// This macro is used to create a callback that will spawn an async block on the local thread.
     #[macro_export]
     macro_rules! async_event {
-        ($($dep:ident),*, $block:block) => {
+        (|$($dep:ident),*| $block:block) => {
             {
                 use yew::prelude::*;
                 use yew::platform::spawn_local;
@@ -29,7 +29,7 @@ pub mod macros {
                 })
             }
         };
-        ([prevent $event_type:ty], $($dep:ident),*, $block:block) => {
+        ([prevent $event_type:ty] | $($dep:ident),*| $block:block) => {
             {
                 use yew::prelude::*;
                 use yew::platform::spawn_local;
@@ -47,11 +47,31 @@ pub mod macros {
         };
     }
 
+    /// I prefer this way of handling cloning dependencies rather than the way it is done in the use_effect_with_deps method.
+    #[macro_export]
+    macro_rules! use_effect_deps {
+        (|$($dep:ident),*| $block:block) => {
+            {
+                use yew::prelude::*;
+                $(
+                    let $dep = $dep.clone();
+                )*
+                use_effect(move || {
+                    $(
+                        let $dep = $dep.clone();
+                    )*
+                    $block
+                }
+                )
+            }
+        };
+    }
+
     #[macro_export]
     macro_rules! handle_api_error {
         ($error:ident, $session_dispatch: ident) => {
-            use crate::router::Route;
             use crate::components::atoms::modal::show_error;
+            use crate::router::Route;
             use yew_router::prelude::*;
             if let Some(error) = &*$error {
                 if let crate::api::client::Error::Endpoint(401..=403, _) = error {
