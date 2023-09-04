@@ -1,9 +1,9 @@
 use crate::{
-    api, assign_value_event, components::atoms::modal::show_error,
+    api, assign_value_event, async_event, components::atoms::modal::show_error,
     models::credentials::Credentials, pages::page_base::PageBase, router::Route,
 };
 use std::fmt::Display;
-use yew::{platform::spawn_local, prelude::*};
+use yew::prelude::*;
 use yew_router::prelude::*;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -31,35 +31,23 @@ pub fn register() -> Html {
 
     let onchange_username = assign_value_event!(form_data.name);
     let onchange_password = assign_value_event!(form_data.password);
-    let onsubmit = {
-        let form_data = form_data.clone();
-        let error_state = error_state.clone();
-        let history = history.clone();
-        Callback::from(move |e: SubmitEvent| {
-            e.prevent_default();
-            let form_data = form_data.clone();
-            let error_state = error_state.clone();
-            let history = history.clone();
-            spawn_local(async move {
-                {
-                    match api::client::Client::register(form_data.borrow().clone()).await {
-                        Ok(()) => {
-                            error_state.set(Option::None);
-                            history.push(&Route::Login);
-                        }
-                        Err(error) => match error {
-                            api::client::Error::Endpoint(_, error) if error.starts_with("Name") => error_state.set(Some(Error::Username(error))),
-                            api::client::Error::Endpoint(_, error) if error.starts_with("Password") => error_state.set(Some(Error::Password(error))),
-                            api::client::Error::Endpoint(_, error) => error_state.set(Some(Error::Global(error))),
-                            e => {
-                                show_error(e.to_string());
-                            }
-                        },
-                    }
+    let onsubmit = async_event!(
+    [prevent SubmitEvent] |form_data, history, error_state| {
+        match api::client::Client::register(form_data.borrow().clone()).await {
+            Ok(()) => {
+                error_state.set(Option::None);
+                history.push(&Route::Login);
+            }
+            Err(error) => match error {
+                api::client::Error::Endpoint(_, error) if error.starts_with("Name") => error_state.set(Some(Error::Username(error))),
+                api::client::Error::Endpoint(_, error) if error.starts_with("Password") => error_state.set(Some(Error::Password(error))),
+                api::client::Error::Endpoint(_, error) => error_state.set(Some(Error::Global(error))),
+                e => {
+                    show_error(e.to_string());
                 }
-            });
-        })
-    };
+            },
+        }
+    });
     html! {
         <PageBase>
         <form class={"form-control m-auto w-5/6 lg:w-3/4 xl:w-1/2"} {onsubmit}>
