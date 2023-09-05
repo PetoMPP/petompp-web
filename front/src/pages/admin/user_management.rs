@@ -2,7 +2,7 @@ use crate::{
     components::organisms::user_manager::UserManager,
     models::user::Role,
     pages::{not_found::NotFound, page_base::PageBase},
-    SessionStore,
+    data::session::SessionStore,
 };
 use yew::prelude::*;
 use yewdux::prelude::*;

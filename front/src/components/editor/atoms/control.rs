@@ -8,7 +8,7 @@ use crate::{
         },
         editor::{data::Store, editor::InnerProps},
     },
-    handle_api_error, SessionStore,
+    handle_api_error, data::session::SessionStore,
 };
 use yew::prelude::*;
 use yewdux::prelude::*;

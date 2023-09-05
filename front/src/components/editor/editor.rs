@@ -4,7 +4,7 @@ use super::{
 };
 use crate::{
     api::client::Client, components::editor::data::State, handle_api_error, use_effect_deps,
-    SessionStore,
+    data::session::SessionStore,
 };
 use yew::{platform::spawn_local, prelude::*};
 use yewdux::prelude::*;

@@ -2,7 +2,7 @@ use crate::{
     models::user::Role,
     pages::{not_found::NotFound, page_base::PageBase},
     router::AdminRoute,
-    SessionStore,
+    data::session::SessionStore,
 };
 use yew::prelude::*;
 use yew_router::prelude::*;
