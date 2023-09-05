@@ -1,9 +1,10 @@
 use crate::{
     async_event,
     components::atoms::modal::{show_modal_callback, Buttons, ModalButton, ModalData, ModalStore},
+    data::session::SessionStore,
     models::user::{Role, User},
     router::Route,
-    SessionStore, Width, WindowStore,
+    data::window::Width, WindowStore,
 };
 use yew::prelude::*;
 use yew_router::prelude::*;
