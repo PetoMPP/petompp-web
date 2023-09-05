@@ -74,8 +74,12 @@ fn set_textarea_text(value: String) {
         .get_element_by_id(TEXTAREA_ID)
         .unwrap()
         .unchecked_into();
+    let sel_start = element.selection_start().unwrap_or_default().unwrap_or_default();
+    let sel_end = element.selection_end().unwrap_or_default().unwrap_or_default();
     element.set_value(value.as_str());
     set_textarea_height(&element);
+    element.set_selection_start(Some(sel_start)).unwrap();
+    element.set_selection_end(Some(sel_end)).unwrap();
 }
 
 fn set_textarea_height(element: &Element) {
