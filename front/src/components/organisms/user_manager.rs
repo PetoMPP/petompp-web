@@ -4,7 +4,7 @@ use crate::{
     components::atoms::modal::{show_modal_callback, Buttons, ModalButton, ModalData, ModalStore},
     handle_api_error,
     models::user::User,
-    SessionStore,
+    data::session::SessionStore,
 };
 use yew::{platform::spawn_local, prelude::*};
 use yewdux::prelude::*;

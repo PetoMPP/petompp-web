@@ -3,7 +3,7 @@ use crate::{
         atoms::logo::Logo,
         organisms::{menu::Menu, navbar::Navbar, user_box::UserBox},
     },
-    Width, WindowStore,
+    data::window::Width, WindowStore,
 };
 use yew::prelude::*;
 use yewdux::prelude::use_store;
