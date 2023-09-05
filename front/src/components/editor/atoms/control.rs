@@ -8,7 +8,8 @@ use crate::{
         },
         editor::{data::Store, editor::InnerProps},
     },
-    handle_api_error, data::session::SessionStore,
+    data::session::SessionStore,
+    handle_api_error,
 };
 use yew::prelude::*;
 use yewdux::prelude::*;
@@ -82,7 +83,7 @@ pub fn control(props: &InnerProps) -> Html {
             <div class={"flex flex-row gap-2 text-2xl text-primary-content"}>
                 <p>{"Editing:"}</p>
                 <p class={"font-mono"}>{props.reskey.reskey.clone()}</p>
-                <Flag country={Country::from(props.reskey.lang.as_str())} />
+                <Flag country={Country::try_from(props.reskey.lang.as_str()).unwrap_or_default()} />
             </div>
             <div class={"flex flex-row gap-2"}>
             <button class={"btn btn-success btn-sm"} onclick={save}>{"Save"}</button>

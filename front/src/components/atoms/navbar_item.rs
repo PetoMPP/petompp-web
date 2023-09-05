@@ -1,6 +1,6 @@
+use crate::router::Route;
 use yew::prelude::*;
 use yew_router::prelude::*;
-use crate::router::Route;
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum Pos {
@@ -24,9 +24,10 @@ pub fn navbar_item(props: &NavbarItemProps) -> Html {
         "btn",
         "btn-neutral",
         match props.pos {
-        Pos::Top => "rounded-t-none",
-        Pos::Left => "rounded-l-none"
-    });
+            Pos::Top => "rounded-t-none",
+            Pos::Left => "rounded-l-none",
+        }
+    );
     if route == curr_route {
         class.push("btn-active");
     }
