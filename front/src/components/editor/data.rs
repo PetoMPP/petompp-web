@@ -21,7 +21,7 @@ impl Store {
         self.values.remove(&key.to_string());
     }
 
-    pub fn set_state(&mut self, key: &Key, state: State) {
+    pub fn add_state(&mut self, key: &Key, state: State) {
         self.values.insert(key.to_string(), state);
     }
 }
@@ -29,7 +29,6 @@ impl Store {
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct State {
     pub value: String,
-    pub preview: bool,
 }
 
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize, Eq, Hash)]
