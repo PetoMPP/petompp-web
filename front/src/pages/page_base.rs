@@ -70,7 +70,7 @@ pub fn editable_page_base(props: &EditablePageBaseProps) -> Html {
     html! {
         <PageBase>
             <button class={edit_class} onclick={edit_onclick}>{"Edit"}</button>
-            <Markdown markdown={(*markdown).clone()}/>
+            <Markdown markdown={(*markdown).clone()} interactive={Some(())}/>
         </PageBase>
     }
 }
