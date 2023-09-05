@@ -1,6 +1,7 @@
 use crate::{
     api, assign_value_event, async_event, components::atoms::modal::show_error,
-    models::credentials::Credentials, pages::page_base::PageBase, router::Route, SessionStore,
+    data::session::SessionStore, models::credentials::Credentials, pages::page_base::PageBase,
+    router::Route,
 };
 use yew::prelude::*;
 use yew_router::prelude::*;
