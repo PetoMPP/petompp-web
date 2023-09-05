@@ -2,7 +2,10 @@ use crate::{
     api::client::Client,
     async_event,
     components::{
-        atoms::flag::{Country, Flag},
+        atoms::{
+            flag::{Country, Flag},
+            modal::{show_modal_callback, Buttons, ModalButton, ModalData, ModalStore},
+        },
         editor::{data::Store, editor::InnerProps},
     },
     handle_api_error, SessionStore,
@@ -14,6 +17,7 @@ use yewdux::prelude::*;
 pub fn control(props: &InnerProps) -> Html {
     let error_state = use_state_eq(|| None);
     let (session_store, session_dispatch) = use_store::<SessionStore>();
+    let (_, modal_dispatch) = use_store::<ModalStore>();
     let (_, dispatch) = use_store::<Store>();
     let state = props.state.clone();
     let token = session_store.token.clone().unwrap_or_default();
@@ -29,6 +33,23 @@ pub fn control(props: &InnerProps) -> Html {
             error_state.set(Some(e));
         }
     });
+    let save = show_modal_callback(
+        ModalData {
+            title: "Save changes?".to_string(),
+            message: "Are you sure you want to save your changes?".to_string(),
+            buttons: Buttons::ConfirmCancel(
+                ModalButton {
+                    text: "Save".to_string(),
+                    onclick: Some(save),
+                },
+                ModalButton {
+                    text: "Cancel".to_string(),
+                    onclick: None,
+                },
+            ),
+        },
+        modal_dispatch.clone(),
+    );
     let discard = {
         let reskey = props.reskey.clone();
         Callback::from(move |_| {
@@ -37,6 +58,24 @@ pub fn control(props: &InnerProps) -> Html {
             });
         })
     };
+    let discard = show_modal_callback(
+        ModalData {
+            title: "Discard changes?".to_string(),
+            message: "Are you sure you want to discard your changes?".to_string(),
+            buttons: Buttons::RiskyCancel(
+                ModalButton {
+                    text: "Discard".to_string(),
+                    onclick: Some(discard),
+                },
+                ModalButton {
+                    text: "Cancel".to_string(),
+                    onclick: None,
+                },
+            ),
+        },
+        modal_dispatch,
+    );
+
     handle_api_error!(error_state, session_dispatch);
     html! {
         <div class={"flex flex-row w-full justify-between gap-2"}>
