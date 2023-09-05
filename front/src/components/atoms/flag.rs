@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use yew::prelude::*;
 
 #[derive(Clone, PartialEq, Properties)]
@@ -5,25 +6,45 @@ pub struct FlagProps {
     pub country: Country,
 }
 
-#[derive(Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub enum Country {
     #[default]
     UnitedKingdom,
     Poland,
 }
 
-impl<'a> From<&'a str> for Country {
-    fn from(value: &'a str) -> Self {
+impl Country {
+    pub fn get_current() -> Self {
+        for lang in web_sys::window().unwrap().navigator().languages().to_vec() {
+            let lang = lang.as_string().unwrap().to_lowercase();
+            if lang.len() < 2 {
+                continue;
+            }
+            if let Ok(country) = Self::try_from(&lang[..2]) {
+                return country;
+            }
+        }
+        Self::default()
+    }
+}
+
+impl<'a> TryFrom<&'a str> for Country {
+    type Error = &'a str;
+
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         match value {
-            "pl" => Self::Poland,
-            "en" | _ => Self::UnitedKingdom,
+            "pl" => Ok(Self::Poland),
+            "en" => Ok(Self::UnitedKingdom),
+            _ => Err(value),
         }
     }
 }
 
-impl From<String> for Country {
-    fn from(value: String) -> Self {
-        Self::from(value.as_str())
+impl TryFrom<String> for Country {
+    type Error = String;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Self::try_from(value.as_str()).map_err(|s| s.to_string())
     }
 }
 
