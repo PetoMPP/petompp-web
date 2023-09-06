@@ -14,6 +14,13 @@ pub enum Country {
 }
 
 impl Country {
+    pub fn key(&self) -> &str {
+        match self {
+            Self::UnitedKingdom => "en",
+            Self::Poland => "pl",
+        }
+    }
+
     pub fn get_current() -> Self {
         for lang in web_sys::window().unwrap().navigator().languages().to_vec() {
             let lang = lang.as_string().unwrap().to_lowercase();
