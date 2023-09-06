@@ -4,7 +4,7 @@ use reqwasm::http::*;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::models::{credentials::Credentials, user::User, resource_data::ResourceData};
+use crate::models::{credentials::Credentials, resource_data::ResourceData, user::User};
 
 #[derive(Debug, PartialEq)]
 pub enum Error {
@@ -60,7 +60,7 @@ impl<T: DeserializeOwned> Response<T> {
 pub struct Client;
 
 lazy_static::lazy_static! {
-    static ref BASE_URL: &'static str = std::option_env!("API_URL").unwrap_or("http://localhost:16969");
+    static ref BASE_URL: &'static str = std::option_env!("API_URL").unwrap_or("http://127.0.0.1:16969");
 }
 
 #[derive(Serialize, Deserialize)]

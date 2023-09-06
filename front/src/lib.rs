@@ -18,12 +18,15 @@ mod pages;
 mod router;
 mod utils;
 
+rust_i18n::i18n!("locales", fallback = "en");
+
 #[function_component(App)]
 pub fn app() -> Html {
     let (_, window_dispatch) = use_store::<WindowStore>();
-    let (_, user_agent_dispatch) = use_store::<UserAgentStore>();
+    let (user_store, user_agent_dispatch) = use_store::<UserAgentStore>();
     WindowStore::add_width_event_listener(window_dispatch);
     UserAgentStore::add_lang_change_event_listener(user_agent_dispatch);
+    rust_i18n::set_locale(user_store.country.key());
 
     html! {
         <BrowserRouter>
