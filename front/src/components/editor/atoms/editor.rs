@@ -1,4 +1,5 @@
-use crate::{components::editor::{data::Store, editor::InnerProps}, use_effect_deps};
+use crate::components::editor::data::{Key, State, Store};
+use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, HtmlInputElement};
 use yew::prelude::*;
@@ -6,63 +7,60 @@ use yewdux::prelude::*;
 
 const TEXTAREA_ID: &str = "editor-textarea";
 
+#[derive(Clone, PartialEq, Properties)]
+pub struct InnerEditorProps {
+    pub reskey: Key,
+    pub initial: Option<String>,
+}
+
 #[function_component(Editor)]
-pub fn editor(props: &InnerProps) -> Html {
-    let (_, dispatch) = use_store::<Store>();
-    use_effect_deps!(|props| {
-        set_textarea_text(props.state.value.clone());
-    });
-    let onchange = {
-        let dispatch = dispatch.clone();
-        let props = props.clone();
-        Callback::from(move |e: Event| {
+pub fn editor(props: &InnerEditorProps) -> Html {
+    let props = props.clone();
+    let (store, dispatch) = use_store::<Store>();
+    use_effect_with_deps(
+        move |props| {
+            if let Some(value) = props.initial.clone() {
+                set_textarea_text(value);
+            }
             let props = props.clone();
-            let element: HtmlInputElement = e.target_unchecked_into();
-            dispatch.reduce_mut(|s| {
-                s.get_state_mut(&props.reskey).unwrap().value = element.value();
-            });
-        })
-    };
-    let onkeydown = Callback::from(|e: KeyboardEvent| {
+            move || {
+                if props.initial.is_some() {
+                    save_editor_state(store, dispatch, props.reskey.clone());
+                }
+            }
+        },
+        props.clone(),
+    );
+    let onkeyup = Callback::from(move |e: KeyboardEvent| {
         let element: HtmlInputElement = e.target_unchecked_into();
-        if e.key() == "Tab" {
-            e.prevent_default();
-            let start = element
-                .selection_start()
-                .unwrap_or_default()
-                .unwrap_or_default();
-            let end = element
-                .selection_end()
-                .unwrap_or_default()
-                .unwrap_or_default();
-            let value = element.value();
-            let new_value = format!(
-                "{}{}{}",
-                &value.as_str()[..(start as usize)],
-                "\t",
-                &value[(end as usize)..]
-            );
-            element.set_value(new_value.as_str());
-            element.set_selection_start(Some(start + 4)).unwrap();
-            element.set_selection_end(Some(start + 4)).unwrap();
-        }
+        set_textarea_height(&element);
     });
-    let onkeyup = {
-        let dispatch = dispatch.clone();
-        let props = props.clone();
-        Callback::from(move |e: KeyboardEvent| {
-            let props = props.clone();
-            let element: HtmlInputElement = e.target_unchecked_into();
-            set_textarea_height(&element);
-            dispatch.reduce_mut(|s| {
-                s.get_state_mut(&props.reskey).unwrap().value = element.value();
-            });
-        })
-    };
     html! {
         <div class={"flex flex-col grow"}>
-            <textarea id={TEXTAREA_ID} {onchange} {onkeydown} {onkeyup} class={"flex grow bg-base-100 outline-none p-2 rounded-b-lg overflow-hidden resize-none leading-normal"}></textarea>
+            <textarea id={TEXTAREA_ID} {onkeyup} class={"flex grow bg-base-100 outline-none p-2 rounded-b-lg overflow-hidden resize-none leading-normal"}></textarea>
         </div>
+    }
+}
+
+pub fn save_editor_state(store: Rc<Store>, dispatch: Dispatch<Store>, reskey: Key) {
+    if let Some(element) = web_sys::window()
+        .unwrap()
+        .document()
+        .unwrap()
+        .get_element_by_id(TEXTAREA_ID)
+    {
+        gloo::console::log!("Saving editor state");
+        let element: HtmlInputElement = element.unchecked_into();
+        let value = element.value();
+        if value == store.get_state(&reskey).unwrap().value.as_str() {
+            return;
+        }
+        let state = State { value };
+        dispatch.reduce_mut(|store| {
+            if let Some(s) = store.get_state_mut(&reskey) {
+                *s = state;
+            }
+        });
     }
 }
 
@@ -74,12 +72,8 @@ fn set_textarea_text(value: String) {
         .get_element_by_id(TEXTAREA_ID)
         .unwrap()
         .unchecked_into();
-    let sel_start = element.selection_start().unwrap_or_default().unwrap_or_default();
-    let sel_end = element.selection_end().unwrap_or_default().unwrap_or_default();
     element.set_value(value.as_str());
     set_textarea_height(&element);
-    element.set_selection_start(Some(sel_start)).unwrap();
-    element.set_selection_end(Some(sel_end)).unwrap();
 }
 
 fn set_textarea_height(element: &Element) {
