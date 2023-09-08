@@ -3,7 +3,7 @@ use crate::{
     async_event,
     components::{
         atoms::{
-            flag::{Country, Flag},
+            flag::{Country, FlagSelect},
             modal::{show_modal_callback, Buttons, ModalButton, ModalData, ModalStore},
         },
         editor::{data::Store, editor::InnerProps},
@@ -18,6 +18,7 @@ use yewdux::prelude::*;
 pub fn control(props: &InnerProps) -> Html {
     let error_state = use_state_eq(|| None);
     let (session_store, session_dispatch) = use_store::<SessionStore>();
+    let navigator = use_navigator().unwrap();
     let (_, modal_dispatch) = use_store::<ModalStore>();
     let (_, dispatch) = use_store::<Store>();
     let state = props.state.clone();
@@ -76,6 +77,15 @@ pub fn control(props: &InnerProps) -> Html {
         },
         modal_dispatch,
     );
+    let onselectedchanged = {
+        let key = props.reskey.reskey.clone();
+        Callback::from(move |c: Country| {
+            navigator.push(&Route::Editor {
+                key: key.clone(),
+                lang: c.key().to_string(),
+            })
+        })
+    };
 
     handle_api_error!(error_state, session_dispatch);
     html! {
@@ -83,7 +93,7 @@ pub fn control(props: &InnerProps) -> Html {
             <div class={"flex flex-row gap-2 text-2xl text-primary-content"}>
                 <p>{"Editing:"}</p>
                 <p class={"font-mono"}>{props.reskey.reskey.clone()}</p>
-                <Flag country={Country::try_from(props.reskey.lang.as_str()).unwrap_or_default()} />
+                <FlagSelect country={Country::try_from(props.reskey.lang.as_str()).unwrap()} {onselectedchanged}/>
             </div>
             <div class={"flex flex-row gap-2"}>
             <button class={"btn btn-success btn-sm"} onclick={save}>{"Save"}</button>
