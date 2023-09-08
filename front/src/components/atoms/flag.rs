@@ -1,3 +1,4 @@
+use enum_iterator::{all, Sequence};
 use serde::{Deserialize, Serialize};
 use yew::prelude::*;
 
@@ -6,7 +7,7 @@ pub struct FlagProps {
     pub country: Country,
 }
 
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Sequence)]
 pub enum Country {
     #[default]
     UnitedKingdom,
@@ -18,6 +19,13 @@ impl Country {
         match self {
             Self::UnitedKingdom => "en",
             Self::Poland => "pl",
+        }
+    }
+
+    pub fn lang_localized(&self) -> &str {
+        match self {
+            Self::UnitedKingdom => "English",
+            Self::Poland => "Polski",
         }
     }
 
@@ -58,8 +66,47 @@ impl TryFrom<String> for Country {
 #[function_component(Flag)]
 pub fn flag(props: &FlagProps) -> Html {
     html! {
-        <div class={"flex items-center w-12 p-[2px]"}>
-            <img src={format!("/img/flags/{}.svg", props.country.key())} />
+        <img src={format!("/img/flags/{}.svg", props.country.key())} class={"flex items-center h-8 w-12 rounded-full"} />
+    }
+}
+
+#[derive(Clone, PartialEq, Properties)]
+pub struct FlagSelectProps {
+    pub country: Country,
+    pub onselectedchanged: Option<Callback<Country>>,
+}
+
+#[function_component(FlagSelect)]
+pub fn flag_select(props: &FlagSelectProps) -> Html {
+    let country = use_state(|| props.country.clone());
+    let get_onclick = |c: &Country| {
+        let changed = props.onselectedchanged.clone();
+        let country = country.clone();
+        let c = c.clone();
+        Callback::from(move |_| {
+            country.set(c.clone());
+            changed.as_ref().map(|cb| cb.emit(c.clone()));
+        })
+    };
+    html! {
+        <div class={"dropdown"}>
+            <label tabindex={"0"}>
+                <Flag country={(*country).clone()} />
+            </label>
+            <ul tabindex={"0"} class={"dropdown-content menu gap-1 bg-base-200 rounded-box z-[1]"}>
+            { for all::<Country>()
+                .map(|country|
+                    html! {
+                        <li class={"flex"}>
+                        <button onclick={get_onclick(&country)} class={"flex flex-row w-max"}>
+                            <Flag country={country.clone()} />
+                            <p class={"flex text-base-content"}>{country.lang_localized()}</p>
+                        </button>
+                        </li>
+                    }
+                )
+            }
+            </ul>
         </div>
     }
 }
