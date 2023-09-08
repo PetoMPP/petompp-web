@@ -29,6 +29,7 @@ impl Store {
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct State {
     pub value: String,
+    pub footprint: i64,
 }
 
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize, Eq, Hash)]
