@@ -6,12 +6,15 @@ use crate::{
             flag::{Country, FlagSelect},
             modal::{show_modal_callback, Buttons, ModalButton, ModalData, ModalStore},
         },
-        editor::{data::Store, editor::InnerProps},
+        editor::{
+            data::{Key, Store},
+            editor::InnerProps,
+        },
     },
     data::session::SessionStore,
-    handle_api_error,
+    handle_api_error, use_effect_deps,
 };
-use yew::prelude::*;
+use yew::{platform::spawn_local, prelude::*};
 use yewdux::prelude::*;
 
 #[function_component(Control)]
@@ -90,15 +93,58 @@ pub fn control(props: &InnerProps) -> Html {
     handle_api_error!(error_state, session_dispatch);
     html! {
         <div class={"flex flex-row w-full justify-between gap-2"}>
-            <div class={"flex flex-row gap-2 text-2xl text-primary-content"}>
-                <p>{"Editing:"}</p>
-                <p class={"font-mono"}>{props.reskey.reskey.clone()}</p>
+            <div class={"flex flex-row gap-2"}>
+                <KeySelect reskey={props.reskey.clone()}/>
                 <FlagSelect country={Country::try_from(props.reskey.lang.as_str()).unwrap()} {onselectedchanged}/>
             </div>
             <div class={"flex flex-row gap-2"}>
             <button class={"btn btn-success btn-sm"} onclick={save}>{"Save"}</button>
             <button class={"btn btn-warning btn-sm"} onclick={discard}>{"Discard"}</button>
             </div>
+        </div>
+    }
+}
+
+#[derive(Clone, PartialEq, Properties)]
+pub struct KeySelectProps {
+    pub reskey: Key,
+}
+
+#[function_component(KeySelect)]
+pub fn key_select(props: &KeySelectProps) -> Html {
+    let error_state = use_state_eq(|| None);
+    let (session_store, session_dispatch) = use_store::<SessionStore>();
+    let navigator = use_navigator().unwrap();
+    let keys = use_state_eq(|| vec![props.reskey.reskey.clone()]);
+    let token = session_store.token.clone().unwrap_or_default();
+    use_effect_deps!(|keys, error_state, token| {
+        spawn_local(async move {
+            match Client::get_resource_keys(&token).await {
+                Ok(k) => keys.set(k),
+                Err(e) => error_state.set(Some(e)),
+            }
+        });
+    });
+    let get_onclick = |key: &str| {
+        let navigator = navigator.clone();
+        let reskey = props.reskey.clone();
+        let key = key.to_string();
+        Callback::from(move |_| {
+            navigator.push(&Route::Editor {
+                key: key.clone(),
+                lang: reskey.lang.clone(),
+            })
+        })
+    };
+    handle_api_error!(error_state, session_dispatch);
+    html! {
+        <div class={"dropdown"}>
+        <label class={"btn btn-sm"} tabindex={"0"}>{&props.reskey.reskey}</label>
+        <ul tabindex={"0"} class={"dropdown-content flex flex-col mt-1 gap-1 z-[1]"}>
+            { for keys.iter()
+                .filter(|key| key != &&props.reskey.reskey)
+                .map(|key| html! { <li class={"btn btn-sm w-max"} onclick={get_onclick(key)}>{key.clone()}</li> }) }
+        </ul>
         </div>
     }
 }
