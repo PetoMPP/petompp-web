@@ -154,6 +154,16 @@ impl Client {
         .await
     }
 
+    pub async fn get_resource_keys(token: &str) -> Result<Vec<String>, Error> {
+        Self::send_json(
+            Method::GET,
+            "api/v1/res/keys",
+            Some(token),
+            Option::<&String>::None,
+        )
+        .await
+    }
+
     pub async fn update_resource(
         token: &str,
         key: &str,

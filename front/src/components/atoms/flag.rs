@@ -22,13 +22,6 @@ impl Country {
         }
     }
 
-    pub fn lang_localized(&self) -> &str {
-        match self {
-            Self::UnitedKingdom => "English",
-            Self::Poland => "Polski",
-        }
-    }
-
     pub fn get_current() -> Self {
         for lang in web_sys::window().unwrap().navigator().languages().to_vec() {
             let lang = lang.as_string().unwrap().to_lowercase();
@@ -93,14 +86,14 @@ pub fn flag_select(props: &FlagSelectProps) -> Html {
             <label tabindex={"0"}>
                 <Flag country={(*country).clone()} />
             </label>
-            <ul tabindex={"0"} class={"dropdown-content menu gap-1 bg-base-200 rounded-box z-[1]"}>
+            <ul tabindex={"0"} class={"dropdown-content z-[1]"}>
             { for all::<Country>()
+                .filter(|c| c != &*country)
                 .map(|country|
                     html! {
-                        <li class={"flex"}>
+                        <li>
                         <button onclick={get_onclick(&country)} class={"flex flex-row w-max"}>
                             <Flag country={country.clone()} />
-                            <p class={"flex text-base-content"}>{country.lang_localized()}</p>
                         </button>
                         </li>
                     }
