@@ -1,9 +1,11 @@
-use super::{
-    atoms::{control::Control, display::Display, editor::Editor as EditorInner},
-    data::{Key, Store},
-};
+use super::atoms::{control::Control, display::Display, editor::Editor as EditorInner};
 use crate::{
-    api::client::Client, components::editor::data::State, data::session::SessionStore,
+    api::client::Client,
+    data::{
+        editor::{EditorState, EditorStore},
+        resources::Key,
+        session::SessionStore,
+    },
     handle_api_error, use_effect_deps,
 };
 use yew::{platform::spawn_local, prelude::*};
@@ -17,16 +19,16 @@ pub struct EditorProps {
 #[derive(Clone, PartialEq, Properties)]
 pub struct InnerProps {
     pub reskey: Key,
-    pub state: State,
+    pub state: EditorState,
 }
 
 #[function_component(Editor)]
 pub fn editor(props: &EditorProps) -> Html {
     let (_, session_dispatch) = use_store::<SessionStore>();
-    let (store, dispatch) = use_store::<Store>();
+    let (store, dispatch) = use_store::<EditorStore>();
     let error_state = use_state_eq(|| None);
     let preview = use_state_eq(|| false);
-    let state = use_state_eq(|| State::default());
+    let state = use_state_eq(|| EditorState::default());
     let reskey = props.reskey.clone();
     use_effect_deps!(|state, reskey, store, dispatch, error_state| {
         if let Some(s) = store.get_state(&reskey) {
@@ -36,7 +38,10 @@ pub fn editor(props: &EditorProps) -> Html {
         spawn_local(async move {
             match Client::get_resource(&reskey.reskey, &reskey.lang).await {
                 Ok(value) => {
-                    let s = State { value, footprint: chrono::Utc::now().timestamp_millis() };
+                    let s = EditorState {
+                        value,
+                        footprint: chrono::Utc::now().timestamp_millis(),
+                    };
                     dispatch.reduce_mut(|store| {
                         store.add_state(&reskey, s);
                     });
