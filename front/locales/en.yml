@@ -1,0 +1,34 @@
+__version: 1.0
+Home: Home
+Projects: Projects
+About: About
+Contact: Contact
+Cancel: Cancel
+Save: Save
+SaveChanges: Save Changes
+SaveChangesQuestion: Do you want to save your changes?
+Discard: Discard
+DiscardChanges: Discard Changes
+DiscardChangesQuestion: Do you want to discard your changes?
+Logout: Logout
+LogoutQuestion: Do you want to logout?
+Login: Login
+Register: Register
+Username: Username
+TypeUsername: Type your username..
+Password: Password
+TypePassword: Type your password..
+# AdminPanel: # Make editable
+UserManagement: User Management
+Id: ID
+Name: Name
+Actions: Actions
+Activate: Activate
+ActivateUserQuestion: Do you want to activate user %{}?
+Delete: Delete
+DeleteUserQuestion: Do you want to delete user %{}?
+ProjectsDescription: This is where I will put my projects.
+Edit: Edit
+Editor: Editor
+Preview: Preview
+# Errors

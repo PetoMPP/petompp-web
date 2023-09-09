@@ -1,8 +1,9 @@
 use crate::{
     components::atoms::navbar_item::{NavbarItem, Pos},
-    router::Route,
+    router::Route, data::locales::{LocalesStore, TK},
 };
 use yew::prelude::*;
+use yewdux::prelude::*;
 
 #[function_component(Menu)]
 pub fn menu() -> Html {
@@ -34,14 +35,15 @@ fn menu_button() -> Html {
 
 #[function_component(MenuDropdown)]
 fn menu_dropdown() -> Html {
+    let (locales_store, _) = use_store::<LocalesStore>();
     html! {
         <div class={"drawer-side z-10"}>
             <label for={"menu-drawer"} class={"drawer-overlay"} />
             <div class={"-ml-1 mt-20 flex flex-col gap-2"}>
-            <NavbarItem pos={Pos::Left} route={Route::Home} name={"Home"}/>
-            <NavbarItem pos={Pos::Left} route={Route::Projects} name={"Projects"}/>
-            <NavbarItem pos={Pos::Left} route={Route::About} name={"About"}/>
-            <NavbarItem pos={Pos::Left} route={Route::Contact} name={"Contact"}/>
+            <NavbarItem pos={Pos::Left} route={Route::Home} name={locales_store.get(TK::Home)}/>
+            <NavbarItem pos={Pos::Left} route={Route::Projects} name={locales_store.get(TK::Projects)}/>
+            <NavbarItem pos={Pos::Left} route={Route::About} name={locales_store.get(TK::About)}/>
+            <NavbarItem pos={Pos::Left} route={Route::Contact} name={locales_store.get(TK::Contact)}/>
             </div>
         </div>
     }

@@ -1,4 +1,7 @@
-use crate::{router::Route, use_effect_deps};
+use crate::{
+    router::{AdminRoute, Route},
+    use_effect_deps,
+};
 use wasm_bindgen::{prelude::Closure, JsCast};
 use web_sys::Element;
 use yew::prelude::*;
@@ -63,16 +66,25 @@ fn make_links_clickable(navigator: Navigator) {
         let Some(route) = Route::recognize(href.as_str()) else {
             continue;
         };
-        let onclick = get_route_onclick(route, navigator.clone());
+        let onclick = match route {
+            Route::AdminPanel => match AdminRoute::recognize(href.as_str()) {
+                Some(admin_route) => get_route_onclick(admin_route, navigator.clone()),
+                _ => get_route_onclick(route, navigator.clone()),
+            },
+            _ => get_route_onclick(route, navigator.clone()),
+        };
         link.add_event_listener_with_callback("click", onclick.as_ref().unchecked_ref())
             .unwrap();
         onclick.forget();
     }
 }
 
-fn get_route_onclick(route: Route, navigator: Navigator) -> Closure<dyn Fn(Event)> {
+fn get_route_onclick<T: Routable + std::fmt::Debug + 'static>(
+    route: T,
+    navigator: Navigator,
+) -> Closure<dyn Fn(Event)> {
     let navigator = navigator.clone();
-    Closure::<dyn Fn(Event)>::new(Box::new(move |e: Event| {
+    Closure::new(Box::new(move |e: Event| {
         e.prevent_default();
         navigator.push(&route);
     }))

@@ -2,6 +2,7 @@ use crate::{
     api::client::Client,
     components::atoms::markdown::Markdown,
     data::{
+        locales::{LocalesStore, TK},
         resources::{Key, ResourceStore},
         session::SessionStore,
     },
@@ -37,6 +38,7 @@ pub struct EditablePageBaseProps {
 #[function_component(EditablePage)]
 pub fn editable_page_base(props: &EditablePageBaseProps) -> Html {
     let reskey = props.reskey.clone();
+    let (locales_store, _) = use_store::<LocalesStore>();
     let (session_store, _) = use_store::<SessionStore>();
     let (res_store, res_dispatch) = use_store::<ResourceStore>();
     let navigator = use_navigator().unwrap();
@@ -72,7 +74,7 @@ pub fn editable_page_base(props: &EditablePageBaseProps) -> Html {
 
     html! {
         <PageBase>
-            <button class={edit_class} onclick={edit_onclick}>{"Edit"}</button>
+            <button class={edit_class} onclick={edit_onclick}>{locales_store.get(TK::Edit)}</button>
             <Markdown markdown={(*markdown).clone()} interactive={Some(())}/>
         </PageBase>
     }

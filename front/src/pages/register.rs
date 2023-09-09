@@ -1,10 +1,15 @@
 use crate::{
-    api, assign_value_event, async_event, components::atoms::modal::show_error,
-    models::credentials::Credentials, pages::page_base::PageBase, router::Route,
+    api, assign_value_event, async_event,
+    components::atoms::modal::show_error,
+    data::locales::{LocalesStore, TK},
+    models::credentials::Credentials,
+    pages::page_base::PageBase,
+    router::Route,
 };
 use std::fmt::Display;
 use yew::prelude::*;
 use yew_router::prelude::*;
+use yewdux::prelude::*;
 
 #[derive(Clone, Debug, PartialEq)]
 enum Error {
@@ -27,6 +32,7 @@ impl Display for Error {
 pub fn register() -> Html {
     let form_data = use_mut_ref(|| Credentials::default());
     let error_state = use_state_eq(|| Option::None);
+    let (locales_store, _) = use_store::<LocalesStore>();
     let history = use_navigator().unwrap();
 
     let onchange_username = assign_value_event!(form_data.name);
@@ -52,20 +58,20 @@ pub fn register() -> Html {
         <PageBase>
         <form class={"form-control m-auto w-5/6 lg:w-3/4 xl:w-1/2"} {onsubmit}>
             <label class={"label"}>
-                <span class={"label-text text-lg lg:text-2xl"}>{"Register"}</span>
+                <span class={"label-text text-lg lg:text-2xl"}>{locales_store.get(TK::Register)}</span>
                 <span class={"label-text-alt text-warning lg:text-lg"}>{if let Some(Error::Global(error)) = &(*error_state) {error.clone() } else { "".to_string() }}</span>
             </label>
             <label class={"label"}>
-                <span class={"label-text lg:text-lg"}>{"Username"}</span>
+                <span class={"label-text lg:text-lg"}>{locales_store.get(TK::Username)}</span>
                 <span class={"label-text-alt text-warning lg:text-lg"}>{if let Some(Error::Username(error)) = &(*error_state) {error.clone() } else { "".to_string() }}</span>
             </label>
-            <input class={"input input-bordered"} placeholder={"Username.."} type={"text"} onchange={onchange_username}/>
+            <input class={"input input-bordered"} placeholder={locales_store.get(TK::TypeUsername)} type={"text"} onchange={onchange_username}/>
             <label class={"label"}>
-                <span class={"label-text lg:text-lg"}>{"Password"}</span>
+                <span class={"label-text lg:text-lg"}>{locales_store.get(TK::Password)}</span>
                 <span class={"label-text-alt text-warning lg:text-lg"}>{if let Some(Error::Password(error)) = &(*error_state) {error.clone() } else { "".to_string() }}</span>
             </label>
-            <input class={"input input-bordered"} placeholder={"Password.."} type={"password"} onchange={onchange_password}/>
-            <button class={"btn btn-primary lg:text-xl mt-4"}>{"Register"}</button>
+            <input class={"input input-bordered"} placeholder={locales_store.get(TK::TypePassword)} type={"password"} onchange={onchange_password}/>
+            <button class={"btn btn-primary lg:text-xl mt-4"}>{locales_store.get(TK::Register)}</button>
         </form>
         </PageBase>
     }

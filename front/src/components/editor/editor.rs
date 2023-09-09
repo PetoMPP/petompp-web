@@ -3,6 +3,7 @@ use crate::{
     api::client::Client,
     data::{
         editor::{EditorState, EditorStore},
+        locales::{LocalesStore, TK},
         resources::Key,
         session::SessionStore,
     },
@@ -26,6 +27,7 @@ pub struct InnerProps {
 pub fn editor(props: &EditorProps) -> Html {
     let (_, session_dispatch) = use_store::<SessionStore>();
     let (store, dispatch) = use_store::<EditorStore>();
+    let (locales_store, _) = use_store::<LocalesStore>();
     let error_state = use_state_eq(|| None);
     let preview = use_state_eq(|| false);
     let state = use_state_eq(|| EditorState::default());
@@ -56,8 +58,8 @@ pub fn editor(props: &EditorProps) -> Html {
         Callback::from(move |_| preview.set(!*preview))
     };
     let btn_text = match *preview {
-        true => "Editor",
-        false => "Preview",
+        true => locales_store.get(TK::Editor),
+        false => locales_store.get(TK::Preview),
     };
     html! {
         <div class={"bg-primary rounded-lg"}>
