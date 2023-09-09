@@ -6,12 +6,9 @@ use crate::{
             flag::{Country, FlagSelect},
             modal::{show_modal_callback, Buttons, ModalButton, ModalData, ModalStore},
         },
-        editor::{
-            data::{Key, Store},
-            editor::InnerProps,
-        },
+        editor::editor::InnerProps,
     },
-    data::session::SessionStore,
+    data::{editor::EditorStore, resources::Key, session::SessionStore},
     handle_api_error, use_effect_deps,
 };
 use yew::{platform::spawn_local, prelude::*};
@@ -23,7 +20,7 @@ pub fn control(props: &InnerProps) -> Html {
     let (session_store, session_dispatch) = use_store::<SessionStore>();
     let navigator = use_navigator().unwrap();
     let (_, modal_dispatch) = use_store::<ModalStore>();
-    let (_, dispatch) = use_store::<Store>();
+    let (_, dispatch) = use_store::<EditorStore>();
     let state = props.state.clone();
     let token = session_store.token.clone().unwrap_or_default();
     let save = async_event!(|state, token, props, error_state| {
