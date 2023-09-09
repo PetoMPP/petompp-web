@@ -65,12 +65,12 @@ pub fn register() -> Html {
                 <span class={"label-text lg:text-lg"}>{locales_store.get(TK::Username)}</span>
                 <span class={"label-text-alt text-warning lg:text-lg"}>{if let Some(Error::Username(error)) = &(*error_state) {error.clone() } else { "".to_string() }}</span>
             </label>
-            <input class={"input input-bordered"} placeholder={locales_store.get(TK::TypeUsername)} type={"text"} onchange={onchange_username}/>
+            <input class={"input input-bordered"} autocomplete={"username"} placeholder={locales_store.get(TK::TypeUsername)} type={"text"} onchange={onchange_username}/>
             <label class={"label"}>
                 <span class={"label-text lg:text-lg"}>{locales_store.get(TK::Password)}</span>
                 <span class={"label-text-alt text-warning lg:text-lg"}>{if let Some(Error::Password(error)) = &(*error_state) {error.clone() } else { "".to_string() }}</span>
             </label>
-            <input class={"input input-bordered"} placeholder={locales_store.get(TK::TypePassword)} type={"password"} onchange={onchange_password}/>
+            <input class={"input input-bordered"} autocomplete={"new-password"} placeholder={locales_store.get(TK::TypePassword)} type={"password"} onchange={onchange_password}/>
             <button class={"btn btn-primary lg:text-xl mt-4"}>{locales_store.get(TK::Register)}</button>
         </form>
         </PageBase>
