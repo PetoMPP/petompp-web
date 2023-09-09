@@ -56,11 +56,11 @@ pub fn login() -> Html {
             <label class={"label"}>
                 <span class={"label-text lg:text-lg"}>{locales_store.get(TK::Username)}</span>
             </label>
-            <input class={"input input-bordered"} placeholder={locales_store.get(TK::TypeUsername)} type={"text"} onchange={onchange_username}/>
+            <input class={"input input-bordered"} autocomplete={"username"} placeholder={locales_store.get(TK::TypeUsername)} type={"text"} onchange={onchange_username}/>
             <label class={"label"}>
                 <span class={"label-text lg:text-lg"}>{locales_store.get(TK::Password)}</span>
             </label>
-            <input class={"input input-bordered"} placeholder={locales_store.get(TK::TypePassword)} type={"password"} onchange={onchange_password}/>
+            <input class={"input input-bordered"} autocomplete={"current-password"} placeholder={locales_store.get(TK::TypePassword)} type={"password"} onchange={onchange_password}/>
             <button class={"btn btn-primary lg:text-xl mt-4"}>{locales_store.get(TK::Login)}</button>
         </form>
         </PageBase>
