@@ -1,5 +1,5 @@
-use enum_iterator::{all, Sequence};
 use serde::{Deserialize, Serialize};
+use strum::{Display, EnumIter, IntoEnumIterator};
 use yew::prelude::*;
 
 #[derive(Clone, PartialEq, Properties)]
@@ -7,7 +7,7 @@ pub struct FlagProps {
     pub country: Country,
 }
 
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Sequence)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize, EnumIter, Display)]
 pub enum Country {
     #[default]
     UnitedKingdom,
@@ -87,7 +87,7 @@ pub fn flag_select(props: &FlagSelectProps) -> Html {
                 <Flag country={(*country).clone()} />
             </label>
             <ul tabindex={"0"} class={"dropdown-content z-[1]"}>
-            { for all::<Country>()
+            { for Country::iter()
                 .filter(|c| c != &*country)
                 .map(|country|
                     html! {

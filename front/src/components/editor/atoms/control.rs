@@ -8,7 +8,12 @@ use crate::{
         },
         editor::editor::InnerProps,
     },
-    data::{editor::EditorStore, resources::Key, session::SessionStore},
+    data::{
+        editor::EditorStore,
+        locales::{LocalesStore, TK},
+        resources::Key,
+        session::SessionStore,
+    },
     handle_api_error, use_effect_deps,
 };
 use yew::{platform::spawn_local, prelude::*};
@@ -17,6 +22,7 @@ use yewdux::prelude::*;
 #[function_component(Control)]
 pub fn control(props: &InnerProps) -> Html {
     let error_state = use_state_eq(|| None);
+    let (locales_store, _) = use_store::<LocalesStore>();
     let (session_store, session_dispatch) = use_store::<SessionStore>();
     let navigator = use_navigator().unwrap();
     let (_, modal_dispatch) = use_store::<ModalStore>();
@@ -37,17 +43,11 @@ pub fn control(props: &InnerProps) -> Html {
     });
     let save = show_modal_callback(
         ModalData {
-            title: "Save changes?".to_string(),
-            message: "Are you sure you want to save your changes?".to_string(),
+            title: locales_store.get(TK::SaveChanges),
+            message: locales_store.get(TK::SaveChangesQuestion),
             buttons: Buttons::ConfirmCancel(
-                ModalButton {
-                    text: "Save".to_string(),
-                    onclick: Some(save),
-                },
-                ModalButton {
-                    text: "Cancel".to_string(),
-                    onclick: None,
-                },
+                ModalButton::new(locales_store.get(TK::Save), Some(save)),
+                ModalButton::new(locales_store.get(TK::Cancel), None),
             ),
         },
         modal_dispatch.clone(),
@@ -62,17 +62,11 @@ pub fn control(props: &InnerProps) -> Html {
     };
     let discard = show_modal_callback(
         ModalData {
-            title: "Discard changes?".to_string(),
-            message: "Are you sure you want to discard your changes?".to_string(),
+            title: locales_store.get(TK::DiscardChanges),
+            message: locales_store.get(TK::DiscardChangesQuestion),
             buttons: Buttons::RiskyCancel(
-                ModalButton {
-                    text: "Discard".to_string(),
-                    onclick: Some(discard),
-                },
-                ModalButton {
-                    text: "Cancel".to_string(),
-                    onclick: None,
-                },
+                ModalButton::new(locales_store.get(TK::Discard), Some(discard)),
+                ModalButton::new(locales_store.get(TK::Cancel), None),
             ),
         },
         modal_dispatch,
@@ -95,8 +89,8 @@ pub fn control(props: &InnerProps) -> Html {
                 <FlagSelect country={Country::try_from(props.reskey.lang.as_str()).unwrap()} {onselectedchanged}/>
             </div>
             <div class={"flex flex-row gap-2"}>
-            <button class={"btn btn-success btn-sm"} onclick={save}>{"Save"}</button>
-            <button class={"btn btn-warning btn-sm"} onclick={discard}>{"Discard"}</button>
+            <button class={"btn btn-success btn-sm"} onclick={save}>{locales_store.get(TK::Save)}</button>
+            <button class={"btn btn-warning btn-sm"} onclick={discard}>{locales_store.get(TK::Discard)}</button>
             </div>
         </div>
     }

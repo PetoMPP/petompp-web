@@ -1,10 +1,14 @@
 use crate::{
     async_event,
     components::atoms::modal::{show_modal_callback, Buttons, ModalButton, ModalData, ModalStore},
-    data::session::SessionStore,
+    data::window::Width,
+    data::{
+        locales::{LocalesStore, TK},
+        session::SessionStore,
+    },
     models::user::{Role, User},
     router::Route,
-    data::window::Width, WindowStore,
+    WindowStore,
 };
 use yew::prelude::*;
 use yew_router::prelude::*;
@@ -47,6 +51,7 @@ fn login_button() -> Html {
 fn logout_button() -> Html {
     let (_, session_dispatch) = use_store::<SessionStore>();
     let (_, dispatch) = use_store::<ModalStore>();
+    let (locales_store, _) = use_store::<LocalesStore>();
     let history = use_navigator().unwrap();
     let onclick = async_event!(|session_dispatch, history| {
         session_dispatch.reduce(|_| SessionStore::default().into());
@@ -54,11 +59,11 @@ fn logout_button() -> Html {
     });
     let onclick = show_modal_callback(
         ModalData {
-            title: "Logout".to_string(),
-            message: "Do you want to logout?".to_string(),
+            title: locales_store.get(TK::Logout),
+            message: locales_store.get(TK::LogoutQuestion),
             buttons: Buttons::RiskyCancel(
-                ModalButton::new("logout", Some(onclick)),
-                ModalButton::new("cancel", None),
+                ModalButton::new(locales_store.get(TK::Logout), Some(onclick)),
+                ModalButton::new(locales_store.get(TK::Cancel), None),
             ),
         },
         dispatch,
