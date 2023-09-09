@@ -1,0 +1,32 @@
+__version: 1.0
+Home: Strona główna
+Projects: Projekty
+About: O mnie
+Contact: Kontakt
+Cancel: Anuluj
+Save: Zapisz
+SaveChanges: Zapisz zmiany
+SaveChangesQuestion: Czy chcesz zapisać zmiany?
+Discard: Odrzuć
+DiscardChanges: Odrzuć zmiany
+DiscardChangesQuestion: Czy chcesz odrzucić zmiany?
+Logout: Wyloguj
+LogoutQuestion: Czy chcesz się wylogować?
+Login: Zaloguj się
+Register: Rejestracja
+Username: Nazwa użytkownika
+TypeUsername: Wpisz swoją nazwę użytkownika..
+Password: Hasło
+TypePassword: Wpisz swoje hasło..
+UserManagement: Zarządzanie użytkownikami
+Id: ID
+Name: Nazwa
+Actions: Działania
+Activate: Aktywuj
+ActivateUserQuestion: Czy chcesz aktywować użytkownika %{}?
+Delete: Usuń
+DeleteUserQuestion: Czy chcesz usunąć użytkownika %{}?
+ProjectsDescription: Tutaj będę umieszczał swoje projekty.
+Edit: Edytuj
+Editor: Edytor
+Preview: Podgląd

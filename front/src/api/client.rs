@@ -1,10 +1,8 @@
-use std::fmt::Display;
-
+use crate::models::{credentials::Credentials, resource_data::ResourceData, user::User};
 use reqwasm::http::*;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
-
-use crate::models::{credentials::Credentials, resource_data::ResourceData, user::User};
+use std::{collections::HashMap, fmt::Display};
 
 #[derive(Debug, PartialEq)]
 pub enum Error {
@@ -179,5 +177,20 @@ impl Client {
         )
         .await
         .map(|_: ResourceData| ())
+    }
+
+    pub async fn get_locale(lang: &str) -> Result<HashMap<String, String>, Error> {
+        let resp = Request::new(format!("/locales/{}.yml", lang).as_str())
+            .method(Method::GET)
+            .send()
+            .await
+            .map_err(|e| Error::Network(e.to_string()))?;
+        let body = resp
+            .binary()
+            .await
+            .map_err(|e| Error::Network(e.to_string()))?;
+
+        serde_yaml::from_slice::<HashMap<String, String>>(&body)
+            .map_err(|e| Error::Parse(e.to_string()))
     }
 }

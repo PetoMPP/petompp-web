@@ -2,15 +2,19 @@ use crate::{
     api::client::Client,
     async_event,
     components::atoms::modal::{show_modal_callback, Buttons, ModalButton, ModalData, ModalStore},
+    data::{
+        locales::{LocalesStore, TK},
+        session::SessionStore,
+    },
     handle_api_error,
     models::user::User,
-    data::session::SessionStore,
 };
 use yew::{platform::spawn_local, prelude::*};
 use yewdux::prelude::*;
 
 #[function_component(UserManager)]
 pub fn user_manager() -> Html {
+    let (locales_store, _) = use_store::<LocalesStore>();
     let (session_store, session_dispatch) = use_store::<SessionStore>();
     let token = session_store.token.clone().unwrap_or_default();
     let error_state = use_state_eq(|| None);
@@ -36,9 +40,9 @@ pub fn user_manager() -> Html {
         <table class={"table"}>
             <thead>
                 <tr>
-                    <th>{"ID"}</th>
-                    <th>{"Name"}</th>
-                    <th>{"Actions"}</th>
+                    <th>{locales_store.get(TK::Id)}</th>
+                    <th>{locales_store.get(TK::Name)}</th>
+                    <th>{locales_store.get(TK::Actions)}</th>
                 </tr>
             </thead>
             <tbody class={"items-center"}>
@@ -72,6 +76,7 @@ fn user_row(props: &UserRowProps) -> Html {
 
 #[function_component(ActivateButton)]
 fn activate_button(props: &UserRowProps) -> Html {
+    let (locales_store, _) = use_store::<LocalesStore>();
     let (session_store, session_dispatch) = use_store::<SessionStore>();
     let (_, dispatch) = use_store::<ModalStore>();
     let error_state = use_state_eq(|| None);
@@ -91,11 +96,11 @@ fn activate_button(props: &UserRowProps) -> Html {
         false => (
             Some(show_modal_callback(
                 ModalData {
-                    title: "Activate".into(),
-                    message: format!("Do you want to activate user {}?", props.user.name),
+                    title: locales_store.get(TK::Activate),
+                    message: locales_store.get(TK::ActivateUserQuestion(props.user.name.clone())),
                     buttons: Buttons::ConfirmCancel(
-                        ModalButton::new("activate", Some(onclick)),
-                        ModalButton::new("cancel", None),
+                        ModalButton::new(locales_store.get(TK::Activate), Some(onclick)),
+                        ModalButton::new(locales_store.get(TK::Cancel), None),
                     ),
                 },
                 dispatch.clone(),
@@ -104,12 +109,13 @@ fn activate_button(props: &UserRowProps) -> Html {
         ),
     };
     html! {
-        <button {class} {onclick}>{"Activate"}</button>
+        <button {class} {onclick}>{locales_store.get(TK::Activate)}</button>
     }
 }
 
 #[function_component(DeleteButton)]
 fn delete_button(props: &UserRowProps) -> Html {
+    let (locales_store, _) = use_store::<LocalesStore>();
     let (session_store, session_dispatch) = use_store::<SessionStore>();
     let (_, dispatch) = use_store::<ModalStore>();
     let error_state = use_state_eq(|| None);
@@ -129,11 +135,11 @@ fn delete_button(props: &UserRowProps) -> Html {
         false => (
             Some(show_modal_callback(
                 ModalData {
-                    title: "Delete".into(),
-                    message: format!("Do you want to delete user {}?", props.user.name),
+                    title: locales_store.get(TK::Delete),
+                    message: locales_store.get(TK::DeleteUserQuestion(props.user.name.clone())),
                     buttons: Buttons::RiskyCancel(
-                        ModalButton::new("delete", Some(onclick)),
-                        ModalButton::new("cancel", None),
+                        ModalButton::new(locales_store.get(TK::Delete), Some(onclick)),
+                        ModalButton::new(locales_store.get(TK::Cancel), None),
                     ),
                 },
                 dispatch.clone(),
@@ -142,6 +148,6 @@ fn delete_button(props: &UserRowProps) -> Html {
         ),
     };
     html! {
-        <button {class} {onclick}>{"Delete"}</button>
+        <button {class} {onclick}>{locales_store.get(TK::Delete)}</button>
     }
 }
