@@ -1,6 +1,6 @@
-use crate::components::editor::{
-    data::{Key, Store},
-    editor::InnerProps,
+use crate::{
+    components::editor::editor::InnerProps,
+    data::{editor::EditorStore, resources::Key},
 };
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
@@ -13,7 +13,7 @@ const TEXTAREA_ID: &str = "editor-textarea";
 #[function_component(Editor)]
 pub fn editor(props: &InnerProps) -> Html {
     let props = props.clone();
-    let (store, dispatch) = use_store::<Store>();
+    let (store, dispatch) = use_store::<EditorStore>();
     let fp = use_state_eq(|| -1);
     use_effect_with_deps(
         move |(props, fp)| {
@@ -37,7 +37,7 @@ pub fn editor(props: &InnerProps) -> Html {
     }
 }
 
-fn save_editor_state(store: Rc<Store>, dispatch: Dispatch<Store>, reskey: Key) {
+fn save_editor_state(store: Rc<EditorStore>, dispatch: Dispatch<EditorStore>, reskey: Key) {
     if let Some(element) = web_sys::window()
         .unwrap()
         .document()

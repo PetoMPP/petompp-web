@@ -1,10 +1,7 @@
 use crate::{
     api::client::Client,
-    components::{
-        atoms::{markdown::Markdown, modal::show_error},
-        editor::data::Key,
-    },
-    data::session::SessionStore,
+    components::atoms::{markdown::Markdown, modal::show_error},
+    data::{resources::Key, session::SessionStore},
     models::user::Role,
     router::Route,
 };

@@ -1,8 +1,7 @@
-use crate::{
-    pages::page_base::PageBase, components::editor::data::Key,
-};
-use yew::prelude::*;
 use crate::components::editor::editor::Editor as EditorInner;
+use crate::data::resources::Key;
+use crate::pages::page_base::PageBase;
+use yew::prelude::*;
 
 #[derive(Clone, PartialEq, Properties)]
 pub struct EditorProps {
