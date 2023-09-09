@@ -1,7 +1,10 @@
 use crate::{
     api::client::Client,
-    components::atoms::{markdown::Markdown, modal::show_error},
-    data::{resources::Key, session::SessionStore},
+    components::atoms::markdown::Markdown,
+    data::{
+        resources::{Key, ResourceStore},
+        session::SessionStore,
+    },
     models::user::Role,
     router::Route,
 };
@@ -33,36 +36,39 @@ pub struct EditablePageBaseProps {
 
 #[function_component(EditablePage)]
 pub fn editable_page_base(props: &EditablePageBaseProps) -> Html {
-    let (session_store, _) = use_store::<SessionStore>();
-    let navigator = use_navigator().unwrap();
     let reskey = props.reskey.clone();
-    let edit_onclick = Callback::from(move |_| {
-        navigator.push(&Route::Editor {
-            key: reskey.reskey.clone(),
-            lang: reskey.lang.clone(),
-        });
-    });
+    let (session_store, _) = use_store::<SessionStore>();
+    let (res_store, res_dispatch) = use_store::<ResourceStore>();
+    let navigator = use_navigator().unwrap();
+    let edit_onclick = {
+        let reskey = reskey.clone();
+        Callback::from(move |_| {
+            navigator.push(&Route::Editor {
+                key: reskey.reskey.clone(),
+                lang: reskey.lang.clone(),
+            });
+        })
+    };
     let edit_class = match &session_store.user {
         Some(u) if u.role == Role::Admin => {
             "btn absolute top-5 right-5 btn-accent btn-xs btn-outline"
         }
         _ => "hidden",
     };
-    let markdown = use_state_eq(|| String::new());
-    {
-        let markdown = markdown.clone();
-        let reskey = props.reskey.clone();
-        spawn_local(async move {
-            match Client::get_resource(reskey.reskey.as_str(), reskey.lang.as_str()).await {
-                Ok(md) => {
-                    markdown.set(md);
-                }
-                Err(e) => {
-                    show_error(e.to_string());
-                }
+    let markdown = {
+        let reskey = reskey.clone();
+        let res_store = res_store.clone();
+        use_state_eq(move || res_store.get_state(&reskey).cloned().unwrap_or_default())
+    };
+    spawn_local(async move {
+        if let Ok(md) = Client::get_resource(reskey.reskey.as_str(), reskey.lang.as_str()).await {
+            if res_store.get_state(&reskey) != Some(&md) {
+                res_dispatch.reduce_mut(|store| {
+                    store.add_or_update_state(&reskey, md);
+                });
             }
-        });
-    }
+        }
+    });
 
     html! {
         <PageBase>
