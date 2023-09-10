@@ -1,5 +1,8 @@
+use crate::api::error::{Error as AppError, UsernameValidationError, ValidationError};
+use crate::components::atoms::text_input::TextInput;
 use crate::{
-    api, assign_value_event, async_event,
+    api::{self, client::ApiError},
+    async_event,
     components::atoms::modal::show_error,
     data::locales::{LocalesStore, TK},
     models::credentials::Credentials,
@@ -7,13 +10,13 @@ use crate::{
     router::Route,
 };
 use std::fmt::Display;
+use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use yewdux::prelude::*;
 
 #[derive(Clone, Debug, PartialEq)]
 enum Error {
-    Global(String),
     Username(String),
     Password(String),
 }
@@ -21,7 +24,6 @@ enum Error {
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::Global(e) => write!(f, "{}", e),
             Error::Username(e) => write!(f, "{}", e),
             Error::Password(e) => write!(f, "{}", e),
         }
@@ -35,43 +37,77 @@ pub fn register() -> Html {
     let (locales_store, _) = use_store::<LocalesStore>();
     let history = use_navigator().unwrap();
 
-    let onchange_username = assign_value_event!(form_data.name);
-    let onchange_password = assign_value_event!(form_data.password);
+    let onchange_username = {
+        let error_state = error_state.clone();
+        let form_data = form_data.clone();
+        Callback::from(move |e: InputEvent| {
+            let target_element = e.target_unchecked_into::<HtmlInputElement>();
+            form_data.borrow_mut().name = target_element.value();
+            error_state.set(Option::None);
+        })
+    };
+    let onchange_password = {
+        let error_state = error_state.clone();
+        let form_data = form_data.clone();
+        Callback::from(move |e: InputEvent| {
+            let target_element = e.target_unchecked_into::<HtmlInputElement>();
+            form_data.borrow_mut().password = target_element.value();
+            error_state.set(Option::None);
+        })
+    };
     let onsubmit = async_event!(
-    [prevent SubmitEvent] |form_data, history, error_state| {
+    [prevent SubmitEvent] |form_data, history, error_state, locales_store| {
         match api::client::Client::register(form_data.borrow().clone()).await {
             Ok(()) => {
                 error_state.set(Option::None);
                 history.push(&Route::Login);
-            }
-            Err(error) => match error {
-                api::client::Error::Endpoint(_, error) if error.starts_with("Name") => error_state.set(Some(Error::Username(error))),
-                api::client::Error::Endpoint(_, error) if error.starts_with("Password") => error_state.set(Some(Error::Password(error))),
-                api::client::Error::Endpoint(_, error) => error_state.set(Some(Error::Global(error))),
-                e => {
-                    show_error(e.to_string());
-                }
             },
+            Err(error) => {
+                match error {
+                    ApiError::Endpoint(_, error) => {
+                        match &error {
+                            AppError::UserNameTaken(_) => error_state.set(Some(Error::Username(error.into_localized(locales_store.clone())))),
+                            AppError::ValidationError(ve) => match ve {
+                                ValidationError::Username(ue) => match ue {
+                                    UsernameValidationError::InvalidLength(_, _) |
+                                    UsernameValidationError::InvalidCharacters(_) => error_state.set(Some(Error::Username(error.into_localized(locales_store.clone())))),
+                                },
+                                ValidationError::Password(_) => error_state.set(Some(Error::Password(error.into_localized(locales_store.clone())))),
+                                _ => show_error(error.into_localized(locales_store.clone())),
+                            },
+                            _ => show_error(error.into_localized(locales_store.clone())),
+                        }
+                    }
+                    ApiError::Parse(error) | ApiError::Network(error) => {
+                        show_error(error)
+                    }
+                }
+            }
         }
     });
+    let username_error = match &*error_state {
+        Some(Error::Username(error)) => Some(error.clone()),
+        _ => None,
+    };
+    let password_error = match &*error_state {
+        Some(Error::Password(error)) => Some(error.clone()),
+        _ => None,
+    };
     html! {
         <PageBase>
         <form class={"form-control m-auto w-5/6 lg:w-3/4 xl:w-1/2"} {onsubmit}>
             <label class={"label"}>
                 <span class={"label-text text-lg lg:text-2xl"}>{locales_store.get(TK::Register)}</span>
-                <span class={"label-text-alt text-warning lg:text-lg"}>{if let Some(Error::Global(error)) = &(*error_state) {error.clone() } else { "".to_string() }}</span>
             </label>
-            <label class={"label"}>
-                <span class={"label-text lg:text-lg"}>{locales_store.get(TK::Username)}</span>
-                <span class={"label-text-alt text-warning lg:text-lg"}>{if let Some(Error::Username(error)) = &(*error_state) {error.clone() } else { "".to_string() }}</span>
-            </label>
-            <input class={"input input-bordered"} autocomplete={"username"} placeholder={locales_store.get(TK::TypeUsername)} type={"text"} onchange={onchange_username}/>
-            <label class={"label"}>
-                <span class={"label-text lg:text-lg"}>{locales_store.get(TK::Password)}</span>
-                <span class={"label-text-alt text-warning lg:text-lg"}>{if let Some(Error::Password(error)) = &(*error_state) {error.clone() } else { "".to_string() }}</span>
-            </label>
-            <input class={"input input-bordered"} autocomplete={"new-password"} placeholder={locales_store.get(TK::TypePassword)} type={"password"} onchange={onchange_password}/>
-            <button class={"btn btn-primary lg:text-xl mt-4"}>{locales_store.get(TK::Register)}</button>
+            <TextInput
+                label={locales_store.get(TK::Username)} itype={"text".to_string()}
+                placeholder={locales_store.get(TK::TypeUsername)} autocomplete={"username"}
+                onchange={onchange_username} error={username_error}/>
+            <TextInput
+                label={locales_store.get(TK::Password)} itype={"password".to_string()}
+                placeholder={locales_store.get(TK::TypePassword)} autocomplete={"new-password"}
+                onchange={onchange_password} error={password_error}/>
+            <button class={"btn btn-primary shadow-md lg:text-xl mt-4"}>{locales_store.get(TK::Register)}</button>
         </form>
         </PageBase>
     }

@@ -24,11 +24,33 @@ Id: ID
 Name: Name
 Actions: Actions
 Activate: Activate
-ActivateUserQuestion: Do you want to activate user %{}?
+ActivateUserQuestion: Do you want to activate user %{0}?
 Delete: Delete
-DeleteUserQuestion: Do you want to delete user %{}?
+DeleteUserQuestion: Do you want to delete user %{0}?
 ProjectsDescription: This is where I will put my projects.
 Edit: Edit
 Editor: Editor
 Preview: Preview
 # Errors
+E_Auth_MissingClaim: Authentication failed. Missing claim "%{0}".
+E_Auth_InvalidFormat: Authentication failed. Invalid calim format "%{0}".
+E_Auth_TokenExpiredS: Authentication failed. Token expired %{0} seconds ago.
+E_Auth_JwtError: "Authentication failed. JWT error: %{0}."
+E_Database: "Database error: %{0}."
+E_DatabaseConnection: "Database connection error: %{0}."
+E_UserNameTaken: "Username %{0} is already taken."
+E_UserNotFound: "User %{0} was not found."
+E_InvalidCredentials: "Invalid credentials."
+E_UserNotConfirmed: "User %{0} is not confirmed."
+E_Validation_Username_InvalidLength: "Username must be between %{0} and %{1} characters long."
+E_Validation_Username_InvalidCharacters: "Username can only contain letters, numbers and allowed special characters (%{0})."
+E_Validation_Password: "Password is invalid."
+E_Validation_PasswordRequirement: "Password must be at least %{0} characters long pass at least %{1} of the following requirements: %{2}."
+E_Validation_PasswordRequirement_ContainsLowercase: "at least 1 lowercase letters"
+E_Validation_PasswordRequirement_ContainsUppercase: "at least 1 uppercase letters"
+E_Validation_PasswordRequirement_ContainsNumber: "at least 1 number"
+E_Validation_PasswordRequirement_ContainsSpecialCharacter: "at least 1 special character"
+E_Validation_Query_InvalidColumn: "Invalid column %{0}."
+E_Validation_ResourceData_KeyMismatch: "Key mismatch. Expected %{0}, got %{1}."
+E_Validation_ResourceData_KeyMissing: "Resource data key missing."
+E_Validation_ResourceData_ValueMissing: "Resource data value missing."
