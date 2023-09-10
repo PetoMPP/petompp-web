@@ -1,4 +1,4 @@
-use crate::components::atoms::flag::Country;
+use crate::{api::error::PasswordRequirements, components::atoms::flag::Country};
 use std::collections::{HashMap, HashSet};
 use strum::{EnumIter, IntoEnumIterator};
 use yewdux::prelude::*;
@@ -26,7 +26,30 @@ impl LocalesStore {
         .cloned()
         .unwrap_or_default();
         match key {
-            TK::ActivateUserQuestion(s) | TK::DeleteUserQuestion(s) => val.replace("%{}", &s),
+            TK::ActivateUserQuestion(s)
+            | TK::DeleteUserQuestion(s)
+            | TK::E_Auth_MissingClaim(s)
+            | TK::E_Auth_InvalidFormat(s)
+            | TK::E_Auth_JwtError(s)
+            | TK::E_Database(s)
+            | TK::E_DatabaseConnection(s)
+            | TK::E_UserNameTaken(s)
+            | TK::E_UserNotFound(s)
+            | TK::E_UserNotConfirmed(s)
+            | TK::E_Validation_Username_InvalidCharacters(s)
+            | TK::E_Validation_Query_InvalidColumn(s) => val.replace("%{0}", &s),
+            TK::E_Auth_TokenExpiredS(s) => val.replace("%{0}", &s.to_string()),
+            TK::E_Validation_Username_InvalidLength(min, max) => val
+                .replace("%{0}", &min.to_string())
+                .replace("%{1}", &max.to_string()),
+            TK::E_Validation_PasswordRequirement(min, max, s) => val
+                .replace("%{0}", &min.to_string())
+                .replace("%{1}", &max.to_string())
+                .replace("%{2}", &s),
+            TK::E_Validation_ResourceData_KeyMismatch(exp, act) => {
+                val.replace("%{0}", &exp).replace("%{1}", &act)
+            }
+            TK::E_Validation_Password(pr) => pr.into_localized(&self),
             _ => val,
         }
     }
@@ -62,9 +85,9 @@ struct DataDiff {
     extra: Vec<String>,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, Clone, EnumIter)]
 pub enum TK {
-    #[allow(non_camel_case_types)]
     __version,
     Home,
     Projects,
@@ -97,7 +120,28 @@ pub enum TK {
     Edit,
     Editor,
     Preview,
-    // TODO: Errors
+    E_Auth_MissingClaim(String),
+    E_Auth_InvalidFormat(String),
+    E_Auth_TokenExpiredS(i32),
+    E_Auth_JwtError(String),
+    E_Database(String),
+    E_DatabaseConnection(String),
+    E_UserNameTaken(String),
+    E_UserNotFound(String),
+    E_InvalidCredentials,
+    E_UserNotConfirmed(String),
+    E_Validation_Username_InvalidLength(i32, i32),
+    E_Validation_Username_InvalidCharacters(String),
+    E_Validation_Password(PasswordRequirements),
+    E_Validation_PasswordRequirement(i32, i32, String),
+    E_Validation_PasswordRequirement_ContainsLowercase,
+    E_Validation_PasswordRequirement_ContainsUppercase,
+    E_Validation_PasswordRequirement_ContainsNumber,
+    E_Validation_PasswordRequirement_ContainsSpecialCharacter,
+    E_Validation_Query_InvalidColumn(String),
+    E_Validation_ResourceData_KeyMismatch(String, String),
+    E_Validation_ResourceData_KeyMissing,
+    E_Validation_ResourceData_ValueMissing,
 }
 
 impl std::fmt::Display for TK {

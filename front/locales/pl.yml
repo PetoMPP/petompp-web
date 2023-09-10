@@ -23,10 +23,33 @@ Id: ID
 Name: Nazwa
 Actions: Działania
 Activate: Aktywuj
-ActivateUserQuestion: Czy chcesz aktywować użytkownika %{}?
+ActivateUserQuestion: Czy chcesz aktywować użytkownika %{0}?
 Delete: Usuń
-DeleteUserQuestion: Czy chcesz usunąć użytkownika %{}?
+DeleteUserQuestion: Czy chcesz usunąć użytkownika %{0}?
 ProjectsDescription: Tutaj będę umieszczał swoje projekty.
 Edit: Edytuj
 Editor: Edytor
 Preview: Podgląd
+# Errors
+E_Auth_MissingClaim: Uwierzytelnianie nie powiodło się. Brakujące roszczenie "%{0}".
+E_Auth_InvalidFormat: Uwierzytelnianie nie powiodło się. Nieprawidłowy format roszczenia "%{0}".
+E_Auth_TokenExpiredS: Uwierzytelnianie nie powiodło się. Token wygasł %{0} sekund temu.
+E_Auth_JwtError: "Uwierzytelnianie nie powiodło się. Błąd JWT: %{0}."
+E_Database: "Błąd bazy danych: %{0}."
+E_DatabaseConnection: "Błąd połączenia z bazą danych: %{0}."
+E_UserNameTaken: "Nazwa użytkownika %{0} jest już zajęta."
+E_UserNotFound: "Nie znaleziono użytkownika %{0}."
+E_InvalidCredentials: "Nieprawidłowe dane logowania."
+E_UserNotConfirmed: "Użytkownik %{0} nie jest potwierdzony."
+E_Validation_Username_InvalidLength: "Nazwa użytkownika musi mieć od %{0} do %{1} znaków."
+E_Validation_Username_InvalidCharacters: "Nazwa użytkownika może zawierać tylko litery, cyfry oraz wybrane znaki specjalne (%{0})."
+E_Validation_Password: "Hasło jest nieprawidłowe."
+E_Validation_PasswordRequirement: "Hasło musi mieć co najmniej %{0} znaków i spełniać co najmniej %{1} z następujących wymagań: %{2}."
+E_Validation_PasswordRequirement_ContainsLowercase: "co najmniej 1 małą literę"
+E_Validation_PasswordRequirement_ContainsUppercase: "co najmniej 1 dużą literę"
+E_Validation_PasswordRequirement_ContainsNumber: "co najmniej 1 cyfrę"
+E_Validation_PasswordRequirement_ContainsSpecialCharacter: "co najmniej 1 znak specjalny"
+E_Validation_Query_InvalidColumn: "Nieprawidłowa kolumna %{0}."
+E_Validation_ResourceData_KeyMismatch: "Niezgodność klucza. Oczekiwano %{0}, otrzymano %{1}."
+E_Validation_ResourceData_KeyMissing: "Brak klucza zasobu."
+E_Validation_ResourceData_ValueMissing: "Brak wartości zasobu."
