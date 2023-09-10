@@ -82,17 +82,17 @@ pub fn flag_select(props: &FlagSelectProps) -> Html {
         })
     };
     html! {
-        <div class={"dropdown min-h-full min-w-full"}>
+        <div class={"dropdown grid items-center"}>
             <label tabindex={"0"}>
             <Flag country={(*country).clone()} />
             </label>
-            <ul tabindex={"0"} class={"dropdown-content z-[1] min-h-full min-w-full"}>
+            <ul tabindex={"0"} class={"dropdown-content z-[1]"}>
             { for Country::iter()
                 .filter(|c| c != &*country)
                 .map(|country|
                     html! {
                         <li class={"my-1"}>
-                        <button onclick={get_onclick(&country)} class={"min-h-full min-w-full"}>
+                        <button onclick={get_onclick(&country)}>
                             <Flag country={country.clone()} />
                         </button>
                         </li>

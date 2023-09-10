@@ -20,10 +20,10 @@ pub fn header() -> Html {
                 <Menu />
                 <Logo />
             </div>
-                <div class={"hidden lg:block lg:absolute lg:top-[4px] lg:right-0 lg:left-0 lg:m-auto lg:w-fit"}>
+                <div class={"hidden lg:block lg:absolute lg:top-0 lg:right-0 lg:left-0 lg:m-auto lg:w-fit"}>
                     <Navbar />
                 </div>
-            <div class={"w-12"}>
+            <div class={"w-12 grid items-center"}>
                 <FlagSelect country={locales_store.curr} {onselectedchanged}/>
             </div>
         </div>
