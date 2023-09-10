@@ -67,7 +67,7 @@ pub fn editor(props: &EditorProps) -> Html {
             <Control reskey={props.reskey.clone()} state={(*state).clone()} />
             </div>
             <div class={"relative m-2 mt-0 bg-base-100"}>
-                <a class={"absolute right-2 btn btn-sm btn-primary no-animation rounded-none rounded-b-md"} {onclick}>{btn_text}</a>
+                <a class={"absolute right-2 top-0 rounded-b-md btn btn-sm btn-primary opacity-70 no-animation rounded-none"} {onclick}>{btn_text}</a>
                 {
                     if *preview { html! { <Display reskey={props.reskey.clone()} state={(*state).clone()} /> } }
                     else { html! { <EditorInner reskey={props.reskey.clone()} state={(*state).clone()} /> } }

@@ -83,12 +83,14 @@ pub fn control(props: &InnerProps) -> Html {
 
     handle_api_error!(error_state, session_dispatch);
     html! {
-        <div class={"flex flex-row w-full justify-between gap-2"}>
-            <div class={"flex flex-row gap-2"}>
+        <div class={"flex flex-col lg:flex-row w-full justify-between gap-4 lg:gap-2"}>
+            <div class={"flex flex-row gap-4 lg:gap-2"}>
                 <KeySelect reskey={props.reskey.clone()}/>
-                <FlagSelect country={Country::try_from(props.reskey.lang.as_str()).unwrap()} {onselectedchanged}/>
+                <div class={"w-12 h-8"}>
+                    <FlagSelect country={Country::try_from(props.reskey.lang.as_str()).unwrap()} {onselectedchanged}/>
+                </div>
             </div>
-            <div class={"flex flex-row gap-2"}>
+            <div class={"flex flex-row justify-end gap-4 lg:gap-2"}>
             <button class={"btn btn-success btn-sm"} onclick={save}>{locales_store.get(TK::Save)}</button>
             <button class={"btn btn-warning btn-sm"} onclick={discard}>{locales_store.get(TK::Discard)}</button>
             </div>

@@ -4,7 +4,7 @@ use crate::{
         atoms::modal::{ErrorModal, Modal},
         organisms::header::Header,
     },
-    data::{locales::LocalesStore, user_agent::UserAgentStore, window::WindowStore},
+    data::locales::LocalesStore,
     router::{switch, Route},
 };
 use yew::{platform::spawn_local, prelude::*};
@@ -22,17 +22,13 @@ mod utils;
 #[function_component(App)]
 pub fn app() -> Html {
     let error_state = use_state(|| None);
-    let (_, window_dispatch) = use_store::<WindowStore>();
-    let (user_store, user_agent_dispatch) = use_store::<UserAgentStore>();
     let (locale_store, locale_dispatch) = use_store::<LocalesStore>();
-    if user_store.country != locale_store.curr || !locale_store.is_loaded(user_store.country) || error_state.is_some() {
+    if !locale_store.is_loaded(locale_store.curr) || error_state.is_some() {
+        let locale_dispatch = locale_dispatch.clone();
         spawn_local(async move {
-            match Client::get_locale(user_store.country.key()).await {
+            match Client::get_locale(locale_store.curr.key()).await {
                 Ok(data) => {
-                    locale_dispatch.reduce_mut(|l| {
-                        l.curr = user_store.country.clone();
-                        l.load(user_store.country.clone(), data)
-                    });
+                    locale_dispatch.reduce_mut(|l| l.load(locale_store.curr, data));
                 }
                 Err(e) => {
                     error_state.set(Some(e));
@@ -40,8 +36,7 @@ pub fn app() -> Html {
             };
         })
     }
-    WindowStore::add_width_event_listener(window_dispatch);
-    UserAgentStore::add_lang_change_event_listener(user_agent_dispatch);
+    LocalesStore::add_lang_change_event_listener(locale_dispatch);
 
     html! {
         <BrowserRouter>
