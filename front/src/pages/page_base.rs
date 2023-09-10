@@ -32,15 +32,18 @@ pub fn page_base(props: &PageBaseProps) -> Html {
 
 #[derive(PartialEq, Properties)]
 pub struct EditablePageBaseProps {
-    pub reskey: Key,
+    pub reskey: String,
 }
 
 #[function_component(EditablePage)]
 pub fn editable_page_base(props: &EditablePageBaseProps) -> Html {
-    let reskey = props.reskey.clone();
     let (locales_store, _) = use_store::<LocalesStore>();
     let (session_store, _) = use_store::<SessionStore>();
     let (res_store, res_dispatch) = use_store::<ResourceStore>();
+    let reskey = Key {
+        reskey: props.reskey.clone(),
+        lang: locales_store.curr.key().to_string(),
+    };
     let navigator = use_navigator().unwrap();
     let edit_onclick = {
         let reskey = reskey.clone();
@@ -57,11 +60,7 @@ pub fn editable_page_base(props: &EditablePageBaseProps) -> Html {
         }
         _ => "hidden",
     };
-    let markdown = {
-        let reskey = reskey.clone();
-        let res_store = res_store.clone();
-        use_state_eq(move || res_store.get_state(&reskey).cloned().unwrap_or_default())
-    };
+    let markdown = res_store.get_state(&reskey).cloned().unwrap_or_default();
     spawn_local(async move {
         if let Ok(md) = Client::get_resource(reskey.reskey.as_str(), reskey.lang.as_str()).await {
             if res_store.get_state(&reskey) != Some(&md) {
@@ -75,7 +74,7 @@ pub fn editable_page_base(props: &EditablePageBaseProps) -> Html {
     html! {
         <PageBase>
             <button class={edit_class} onclick={edit_onclick}>{locales_store.get(TK::Edit)}</button>
-            <Markdown markdown={(*markdown).clone()} interactive={Some(())}/>
+            <Markdown {markdown} interactive={Some(())}/>
         </PageBase>
     }
 }

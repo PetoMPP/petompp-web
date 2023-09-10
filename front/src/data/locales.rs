@@ -1,13 +1,28 @@
 use crate::{api::error::PasswordRequirements, components::atoms::flag::Country};
+use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use strum::{EnumIter, IntoEnumIterator};
+use wasm_bindgen::{prelude::Closure, JsCast};
 use yewdux::prelude::*;
 
-#[derive(Default, PartialEq, Clone, Debug, Store)]
+#[derive(PartialEq, Clone, Debug, Store, Serialize, Deserialize)]
+#[store(storage="local")]
 pub struct LocalesStore {
     pub curr: Country,
+    #[serde(skip_serializing, skip_deserializing)]
     pl: HashMap<String, String>,
+    #[serde(skip_serializing, skip_deserializing)]
     en: HashMap<String, String>,
+}
+
+impl Default for LocalesStore {
+    fn default() -> Self {
+        Self {
+            curr: Country::get_current(),
+            pl: Default::default(),
+            en: Default::default(),
+        }
+    }
 }
 
 impl LocalesStore {
@@ -66,6 +81,17 @@ impl LocalesStore {
             Country::Poland => self.pl = data,
             Country::UnitedKingdom => self.en = data,
         };
+    }
+
+    pub fn add_lang_change_event_listener(dispatch: Dispatch<Self>) {
+        let closure = Closure::wrap(Box::new(move || {
+            dispatch.reduce_mut(|state| state.curr = Country::get_current())
+        }) as Box<dyn FnMut()>);
+        web_sys::window()
+            .unwrap()
+            .add_event_listener_with_callback("languagechange", closure.as_ref().unchecked_ref())
+            .unwrap();
+        closure.forget();
     }
 
     fn validate_data(data: &HashMap<String, String>) -> Result<(), DataDiff> {
