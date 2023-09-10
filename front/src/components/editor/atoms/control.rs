@@ -86,7 +86,7 @@ pub fn control(props: &InnerProps) -> Html {
         <div class={"flex flex-col lg:flex-row w-full justify-between gap-4 lg:gap-2"}>
             <div class={"flex flex-row gap-4 lg:gap-2"}>
                 <KeySelect reskey={props.reskey.clone()}/>
-                <div class={"w-12 h-8"}>
+                <div class={"w-12 h-8 grid items-center"}>
                     <FlagSelect country={Country::try_from(props.reskey.lang.as_str()).unwrap()} {onselectedchanged}/>
                 </div>
             </div>
