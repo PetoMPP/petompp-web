@@ -13,6 +13,7 @@ pub struct NavbarItemProps {
     pub route: Route,
     pub name: String,
     pub pos: Pos,
+    pub hidden_if_large: Option<()>,
 }
 
 #[function_component(NavbarItem)]
@@ -26,6 +27,10 @@ pub fn navbar_item(props: &NavbarItemProps) -> Html {
         match props.pos {
             Pos::Top => "rounded-t-none",
             Pos::Left => "rounded-l-none",
+        },
+        match props.hidden_if_large {
+            Some(_) => "lg:hidden",
+            None => "",
         }
     );
     if route == curr_route {

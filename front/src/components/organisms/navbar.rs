@@ -10,7 +10,7 @@ use yewdux::prelude::*;
 pub fn navbar() -> Html {
     let (locales_store, _) = use_store::<LocalesStore>();
     html! {
-        <div class={classes!("flex", "flex-row", "gap-2", "px-0.5", "-mt-2", "rounded-b-md")}>
+        <div class={"flex flex-row gap-2 px-0.5 -mt-2"}>
             <NavbarItem pos={Pos::Top} route={Route::Home} name={locales_store.get(TK::Home)}/>
             <NavbarItem pos={Pos::Top} route={Route::Projects} name={locales_store.get(TK::Projects)}/>
             <NavbarItem pos={Pos::Top} route={Route::About} name={locales_store.get(TK::About)}/>
