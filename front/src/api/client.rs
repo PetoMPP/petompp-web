@@ -1,3 +1,4 @@
+use super::error::Error;
 use crate::models::{credentials::Credentials, resource_data::ResourceData, user::User};
 use reqwasm::http::*;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -5,52 +6,51 @@ use serde_json::Value;
 use std::{collections::HashMap, fmt::Display};
 
 #[derive(Debug, PartialEq)]
-pub enum Error {
-    Endpoint(u16, String),
+pub enum ApiError {
+    Endpoint(u16, Error),
     Parse(String),
     Network(String),
 }
 
-impl Display for Error {
+impl Display for ApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!("{:?}", self))
     }
 }
 
-impl std::error::Error for Error {}
+impl std::error::Error for ApiError {}
 
 pub enum Response<T> {
     Success(T),
-    Error(u16, String),
+    Error(u16, Error),
 }
 
 impl<T: DeserializeOwned> Response<T> {
-    async fn from_response(value: reqwasm::http::Response) -> Result<Self, Error> {
+    async fn from_response(value: reqwasm::http::Response) -> Result<Self, ApiError> {
         let status_code = value.status();
         let body = value
             .json::<Value>()
             .await
-            .map_err(|e| Error::Parse(e.to_string()))?;
+            .map_err(|e| ApiError::Parse(e.to_string()))?;
         let status = body
             .get("status")
-            .ok_or(Error::Parse("Missing status".to_string()))?
+            .ok_or(ApiError::Parse("Missing status".to_string()))?
             .as_str()
-            .ok_or(Error::Parse("Invalid status format".to_string()))?;
+            .ok_or(ApiError::Parse("Invalid status format".to_string()))?;
         let data = body
             .get("data")
-            .ok_or(Error::Parse("Missing data".to_string()))?;
+            .ok_or(ApiError::Parse("Missing data".to_string()))?;
         match status {
             "success" => Ok(Response::Success(
                 serde_json::from_value(data.clone())
-                    .map_err(|e| Error::Parse(format!("Invalid data format, {}", e)))?,
+                    .map_err(|e| ApiError::Parse(format!("Invalid data format, {}", e)))?,
             )),
             "error" => Ok(Response::Error(
                 status_code,
-                data.as_str()
-                    .ok_or(Error::Parse("Invalid error data format".to_string()))?
-                    .to_string(),
+                serde_json::from_value(data.clone())
+                    .map_err(|e| ApiError::Parse(format!("Invalid data format, {}", e)))?,
             )),
-            _ => Err(Error::Parse("Invalid status".to_string())),
+            _ => Err(ApiError::Parse("Invalid status".to_string())),
         }
     }
 }
@@ -78,38 +78,38 @@ impl Client {
         path: &str,
         token: Option<&str>,
         body: Option<&impl Serialize>,
-    ) -> Result<R, Error> {
+    ) -> Result<R, ApiError> {
         let mut request = Request::new(Self::get_url(path).as_str()).method(method);
         if let Some(token) = token {
             request = request.header("Authorization", format!("Bearer {}", token).as_str());
         }
         if let Some(body) = body {
-            request =
-                request.body(serde_json::to_string(body).map_err(|e| Error::Parse(e.to_string()))?);
+            request = request
+                .body(serde_json::to_string(body).map_err(|e| ApiError::Parse(e.to_string()))?);
         }
 
         let response = request
             .send()
             .await
-            .map_err(|e| Error::Network(e.to_string()))?;
+            .map_err(|e| ApiError::Network(e.to_string()))?;
 
         match Response::from_response(response).await? {
             Response::Success(data) => Ok(data),
-            Response::Error(s, e) => Err(Error::Endpoint(s, e)),
+            Response::Error(s, e) => Err(ApiError::Endpoint(s, e)),
         }
     }
 
-    pub async fn login(credentials: Credentials) -> Result<LoginResponse, Error> {
+    pub async fn login(credentials: Credentials) -> Result<LoginResponse, ApiError> {
         Self::send_json(Method::POST, "api/v1/users/login", None, Some(&credentials)).await
     }
 
-    pub async fn register(credentials: Credentials) -> Result<(), Error> {
+    pub async fn register(credentials: Credentials) -> Result<(), ApiError> {
         Self::send_json::<User>(Method::POST, "api/v1/users", None, Some(&credentials))
             .await
             .map(|_| ())
     }
 
-    pub async fn get_users(token: &str) -> Result<Vec<User>, Error> {
+    pub async fn get_users(token: &str) -> Result<Vec<User>, ApiError> {
         Self::send_json(
             Method::GET,
             "api/v1/users/all?range=all",
@@ -120,7 +120,7 @@ impl Client {
         .map(|u: Vec<Vec<User>>| u[0].clone())
     }
 
-    pub async fn activate_user(token: &str, id: i32) -> Result<(), Error> {
+    pub async fn activate_user(token: &str, id: i32) -> Result<(), ApiError> {
         Self::send_json::<User>(
             Method::POST,
             format!("api/v1/users/{}/activate", id).as_str(),
@@ -131,7 +131,7 @@ impl Client {
         .map(|_| ())
     }
 
-    pub async fn delete_user(token: &str, id: i32) -> Result<(), Error> {
+    pub async fn delete_user(token: &str, id: i32) -> Result<(), ApiError> {
         Self::send_json::<User>(
             Method::DELETE,
             format!("api/v1/users/{}", id).as_str(),
@@ -142,7 +142,7 @@ impl Client {
         .map(|_| ())
     }
 
-    pub async fn get_resource(key: &str, lang: &str) -> Result<String, Error> {
+    pub async fn get_resource(key: &str, lang: &str) -> Result<String, ApiError> {
         Self::send_json(
             Method::GET,
             format!("api/v1/res/{}?lang={}", key, lang).as_str(),
@@ -152,7 +152,7 @@ impl Client {
         .await
     }
 
-    pub async fn get_resource_keys(token: &str) -> Result<Vec<String>, Error> {
+    pub async fn get_resource_keys(token: &str) -> Result<Vec<String>, ApiError> {
         Self::send_json(
             Method::GET,
             "api/v1/res/keys",
@@ -167,7 +167,7 @@ impl Client {
         key: &str,
         lang: &str,
         value: &str,
-    ) -> Result<(), Error> {
+    ) -> Result<(), ApiError> {
         let resource = ResourceData::new_from_lang(key, lang, value)?;
         Self::send_json(
             Method::POST,
@@ -179,18 +179,18 @@ impl Client {
         .map(|_: ResourceData| ())
     }
 
-    pub async fn get_locale(lang: &str) -> Result<HashMap<String, String>, Error> {
+    pub async fn get_locale(lang: &str) -> Result<HashMap<String, String>, ApiError> {
         let resp = Request::new(format!("/locales/{}.yml", lang).as_str())
             .method(Method::GET)
             .send()
             .await
-            .map_err(|e| Error::Network(e.to_string()))?;
+            .map_err(|e| ApiError::Network(e.to_string()))?;
         let body = resp
             .binary()
             .await
-            .map_err(|e| Error::Network(e.to_string()))?;
+            .map_err(|e| ApiError::Network(e.to_string()))?;
 
         serde_yaml::from_slice::<HashMap<String, String>>(&body)
-            .map_err(|e| Error::Parse(e.to_string()))
+            .map_err(|e| ApiError::Parse(e.to_string()))
     }
 }
