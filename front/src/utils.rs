@@ -1,16 +1,4 @@
 pub mod macros {
-    #[macro_export]
-    macro_rules! assign_value_event {
-        ($_struct:ident.$field:ident) => {{
-            use web_sys::HtmlInputElement;
-            let _struct = $_struct.clone();
-            Callback::from(move |e: Event| {
-                let target_element = e.target_unchecked_into::<HtmlInputElement>();
-                _struct.borrow_mut().$field = target_element.value();
-            })
-        }};
-    }
-
     /// This macro is used to create a callback that will spawn an async block on the local thread.
     #[macro_export]
     macro_rules! async_event {
@@ -74,7 +62,7 @@ pub mod macros {
             use crate::router::Route;
             use yew_router::prelude::*;
             if let Some(error) = &*$error {
-                if let crate::api::client::Error::Endpoint(401..=403, _) = error {
+                if let crate::api::client::ApiError::Endpoint(401..=403, _) = error {
                     $session_dispatch.reduce(|_| {
                         SessionStore {
                             token: None,
