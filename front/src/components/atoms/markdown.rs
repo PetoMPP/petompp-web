@@ -60,22 +60,28 @@ fn make_links_clickable(navigator: Navigator) {
         let Some(href) = link.get_attribute("href") else {
             continue;
         };
-        if !href.starts_with('/') {
-            continue;
-        }
-        let Some(route) = Route::recognize(href.as_str()) else {
-            continue;
-        };
-        let onclick = match route {
-            Route::AdminPanel => match AdminRoute::recognize(href.as_str()) {
-                Some(admin_route) => get_route_onclick(admin_route, navigator.clone()),
-                _ => get_route_onclick(route, navigator.clone()),
+        match href.as_str() {
+            ref x if x.starts_with('/') => match Route::recognize(x) {
+                Some(route) => {
+                    let onclick = match route {
+                        Route::AdminPanel => match AdminRoute::recognize(href.as_str()) {
+                            Some(admin_route) => get_route_onclick(admin_route, navigator.clone()),
+                            _ => get_route_onclick(route, navigator.clone()),
+                        },
+                        _ => get_route_onclick(route, navigator.clone()),
+                    };
+                    link.add_event_listener_with_callback(
+                        "click",
+                        onclick.as_ref().unchecked_ref(),
+                    )
+                    .unwrap();
+                    onclick.forget();
+                }
+                None => link.set_attribute("target", "_blank").unwrap(),
             },
-            _ => get_route_onclick(route, navigator.clone()),
+            ref x if x.starts_with("http") => link.set_attribute("target", "_blank").unwrap(),
+            _ => continue,
         };
-        link.add_event_listener_with_callback("click", onclick.as_ref().unchecked_ref())
-            .unwrap();
-        onclick.forget();
     }
 }
 

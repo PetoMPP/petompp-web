@@ -2,6 +2,10 @@
 module.exports = {
   content: ['./src/**/*.html', './src/**/*.css', './src/**/*.rs', './*.html'],
   theme: {
+    fontFamily: {
+      'sans': ['Montserrat', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      'mono': ['Roboto Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+    },
     extend: {
       height: {
         screen: ['100vh /* fallback for Opera, IE and etc. */', '100dvh'],
