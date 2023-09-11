@@ -22,8 +22,8 @@ pub struct PageBaseProps {
 #[function_component(PageBase)]
 pub fn page_base(props: &PageBaseProps) -> Html {
     html! {
-        <div class={"animate-fade-up flex flex-col mt-10 lg:mt-20 min-h-[40rem] w-full mb-6 p-8 rounded-t-xl bg-base-100"}>
-            <div class={"flex flex-col lg:w-5/6 w-full mx-auto"}>
+        <div class={"relative animate-fade animate-duration-500 animate-ease-in-out flex flex-col grow mt-10 lg:mt-20 w-full p-8 rounded-t-xl bg-base-100"}>
+            <div class={"flex flex-col grow lg:w-5/6 w-full mx-auto"}>
                 {props.children.clone()}
             </div>
         </div>
