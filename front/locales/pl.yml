@@ -32,6 +32,7 @@ Edit: Edytuj
 Editor: Edytor
 Preview: Podgląd
 SaveDraft: Zapisz kopię roboczą
+Blog: Blog
 # Errors
 E_Auth_MissingClaim: Uwierzytelnianie nie powiodło się. Brakujące roszczenie "%{0}".
 E_Auth_InvalidFormat: Uwierzytelnianie nie powiodło się. Nieprawidłowy format roszczenia "%{0}".

@@ -148,6 +148,7 @@ pub enum TK {
     Editor,
     Preview,
     SaveDraft,
+    Blog,
     E_Auth_MissingClaim(String),
     E_Auth_InvalidFormat(String),
     E_Auth_TokenExpiredS(i32),
