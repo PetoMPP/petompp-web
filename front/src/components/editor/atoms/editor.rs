@@ -32,7 +32,7 @@ pub fn editor(props: &InnerProps) -> Html {
     });
     html! {
         <div class={"flex flex-col grow"}>
-            <textarea id={TEXTAREA_ID} {oninput} class={"flex grow bg-base-100 outline-none p-2 rounded-b-lg overflow-hidden resize-none leading-normal"}></textarea>
+            <textarea id={TEXTAREA_ID} {oninput} class={"flex grow font-mono bg-base-100 outline-none p-2 rounded-b-lg overflow-hidden resize-none leading-normal"}></textarea>
         </div>
     }
 }

@@ -23,9 +23,7 @@ pub fn header() -> Html {
                 <div class={"hidden lg:block lg:absolute lg:top-0 lg:right-0 lg:left-0 lg:m-auto lg:w-fit"}>
                     <Navbar />
                 </div>
-            <div class={"w-12 grid items-center"}>
-                <FlagSelect country={locales_store.curr} {onselectedchanged}/>
-            </div>
+            <FlagSelect country={locales_store.curr} {onselectedchanged}/>
         </div>
         </div>
         </div>
