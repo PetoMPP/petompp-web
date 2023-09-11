@@ -60,7 +60,7 @@ fn menu_dropdown() -> Html {
             <label for={"menu-drawer"} class={"drawer-overlay"} />
             <div class={"-ml-1 mt-20 flex flex-col gap-2 min-w-[6rem]"}>
                 <a onclick={get_onclick.clone()(Route::Home)} class={"lg:hidden btn btn-neutral borderen-none bordered-r-lg"}>{locales_store.get(TK::Home)}</a>
-                <a onclick={get_onclick.clone()(Route::Blog)} class={"lg:hidden btn btn-neutral borderen-none bordered-r-lg"}>{locales_store.get(TK::Blog)}</a>
+                <a onclick={get_onclick.clone()(Route::BlogRoot)} class={"lg:hidden btn btn-neutral borderen-none bordered-r-lg"}>{locales_store.get(TK::Blog)}</a>
                 <a onclick={get_onclick.clone()(Route::Projects)} class={"lg:hidden btn btn-neutral borderen-none bordered-r-lg"}>{locales_store.get(TK::Projects)}</a>
                 <a onclick={get_onclick.clone()(Route::About)} class={"lg:hidden btn btn-neutral borderen-none bordered-r-lg"}>{locales_store.get(TK::About)}</a>
                 <a onclick={get_onclick.clone()(Route::Contact)} class={"lg:hidden btn btn-neutral borderen-none bordered-r-lg"}>{locales_store.get(TK::Contact)}</a>

@@ -61,7 +61,7 @@ pub fn switch(route: Route) -> Html {
             html! { <Switch<AdminRoute> render={admin_switch} />}
         }
         Route::Editor { key, lang } => html! { <Editor reskey={key} lang={lang} />},
-        Route::BlogRoot | Route::Blog => html! { <Blog />},
+        Route::BlogRoot | Route::Blog => html! { <Switch<BlogRoute> render={blog_switch} />},
         Route::NotFound => html! {  <NotFound />},
     }
 }
@@ -108,7 +108,7 @@ pub fn blog_switch(route: BlogRoute) -> Html {
         BlogRoute::BlogPost { id } => todo!() /*html! { <BlogPost {id} />}*/,
         BlogRoute::BlogPostEditor { id, lang } => todo!() /*html! { <BlogPostEditor {id} {lang} />}*/,
         BlogRoute::BlogPostNew => todo!() /*html! { <BlogPostNew />}*/,
-        BlogRoute::BlogByTag { tag } => todo!() /*html! { <Blog tag={Some(tag)} />}*/,
+        BlogRoute::BlogByTag { tag } => html! { <Blog tag={Some(tag)} />},
         BlogRoute::NotFound => html! {<NotFound />},
     }
 }

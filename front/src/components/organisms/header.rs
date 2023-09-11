@@ -25,7 +25,7 @@ pub fn header() -> Html {
                 <div class={"hidden lg:block lg:absolute lg:top-0 lg:right-0 lg:left-0 lg:m-auto lg:w-fit"}>
                     <div class={"flex flex-row gap-2 px-0.5 -mt-2"}>
                         <Link<Route> to={Route::Home} classes={"btn btn-neutral borderen-none bordered-b-lg"}>{locales_store.get(TK::Home)}</Link<Route>>
-                        <Link<Route> to={Route::Blog} classes={"btn btn-neutral borderen-none bordered-b-lg"}>{locales_store.get(TK::Blog)}</Link<Route>>
+                        <Link<Route> to={Route::BlogRoot} classes={"btn btn-neutral borderen-none bordered-b-lg"}>{locales_store.get(TK::Blog)}</Link<Route>>
                         <Link<Route> to={Route::Projects} classes={"btn btn-neutral borderen-none bordered-b-lg"}>{locales_store.get(TK::Projects)}</Link<Route>>
                         <Link<Route> to={Route::About} classes={"btn btn-neutral borderen-none bordered-b-lg"}>{locales_store.get(TK::About)}</Link<Route>>
                         <Link<Route> to={Route::Contact} classes={"btn btn-neutral borderen-none bordered-b-lg"}>{locales_store.get(TK::Contact)}</Link<Route>>
