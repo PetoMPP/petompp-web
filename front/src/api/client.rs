@@ -58,7 +58,14 @@ impl<T: DeserializeOwned> Response<T> {
 pub struct Client;
 
 lazy_static::lazy_static! {
-    static ref BASE_URL: &'static str = std::option_env!("API_URL").unwrap_or("http://127.0.0.1:16969");
+    static ref BASE_URL: String = match std::env::var("API_URL").unwrap_or("http://127.0.0.1:16969".to_string()) {
+        url if url.ends_with('/') => url,
+        url => format!("{}/", url),
+    };
+    static ref AZURE_STORAGE_URL: String = match std::env::var("AZURE_STORAGE_URL").expect("AZURE_STORAGE_URL must be set") {
+        url if url.ends_with('/') => url,
+        url => format!("{}/", url),
+    };
 }
 
 #[derive(Serialize, Deserialize)]
@@ -69,8 +76,7 @@ pub struct LoginResponse {
 
 impl Client {
     fn get_url(path: &str) -> String {
-        let separator = if path.starts_with("/") { "" } else { "/" };
-        format!("{}{}{}", *BASE_URL, separator, path)
+        format!("{}{}", *BASE_URL, path)
     }
 
     async fn send_json<R: DeserializeOwned>(
@@ -192,5 +198,21 @@ impl Client {
 
         serde_yaml::from_slice::<HashMap<String, String>>(&body)
             .map_err(|e| ApiError::Parse(e.to_string()))
+    }
+
+    pub async fn upload_img(token: &str, img: web_sys::File) -> Result<String, ApiError> {
+        let resp = Request::new(Client::get_url("api/v1/img/").as_str())
+            .method(Method::PUT)
+            .header("Authorization", format!("Bearer {}", token).as_str())
+            .body(img)
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+        match Response::<String>::from_response(resp).await? {
+            Response::Success(filename) => {
+                Ok(format!("{}{}", AZURE_STORAGE_URL.as_str(), filename))
+            }
+            Response::Error(s, e) => Err(ApiError::Endpoint(s, e)),
+        }
     }
 }
