@@ -1,6 +1,6 @@
 use crate::{
     api::client::{ApiError, Client},
-    components::editor::editor::InnerProps,
+    components::atoms::markdown::Markdown,
     data::{editor::EditorStore, resources::Key, session::SessionStore},
     handle_api_error,
 };
@@ -12,40 +12,65 @@ use yewdux::prelude::*;
 
 const TEXTAREA_ID: &str = "editor-textarea";
 
+#[derive(Clone, PartialEq, Properties)]
+pub struct InnerEditProps {
+    pub reskey: Key,
+    pub state: String,
+    pub preview: bool,
+    pub onmodifiedchanged: Callback<bool>,
+}
+
 #[function_component(Editor)]
-pub fn editor(props: &InnerProps) -> Html {
+pub fn editor(props: &InnerEditProps) -> Html {
     let props = props.clone();
     let error_state = use_state_eq(|| None);
-    let (store, dispatch) = use_store::<EditorStore>();
+    let current_val = use_mut_ref(|| String::new());
+    let last_state = use_mut_ref(|| props.state.clone());
+    let last_mod_state = use_mut_ref(|| false);
+    let markdown = use_state(|| String::new());
     let (session_store, session_dispatch) = use_store::<SessionStore>();
-    let fp = use_state_eq(|| -1);
     use_effect_with_deps(
-        move |(props, fp)| {
-            if props.state.footprint != **fp {
-                fp.set(props.state.footprint);
-                set_textarea_text(props.state.value.clone());
-            }
+        move |(props, current_val, last_state, markdown, last_mod_state)| {
+            let val = match !current_val.borrow().is_empty() && last_state.borrow().eq(&props.state)
+            {
+                true => current_val.borrow().to_string(),
+                false => {
+                    current_val.borrow_mut().clear();
+                    let mut last_mod = last_mod_state.borrow_mut();
+                    if *last_mod {
+                        props.onmodifiedchanged.emit(false);
+                        *last_mod = false;
+                    }
+                    props.state.clone()
+                }
+            };
+            set_textarea_text(val.as_str());
+            markdown.set(val);
+            last_state.replace(props.state.clone());
             move || {}
         },
-        (props.clone(), fp.clone()),
+        (
+            props.clone(),
+            current_val.clone(),
+            last_state.clone(),
+            markdown.clone(),
+            last_mod_state.clone(),
+        ),
     );
 
     let onpaste = {
         let props = props.clone();
-        let store = store.clone();
-        let dispatch = dispatch.clone();
+        let current_val = current_val.clone();
         let session_store = session_store.clone();
         let error_state = error_state.clone();
         Callback::from(move |e: Event| {
             let props = props.clone();
-            let store = store.clone();
-            let dispatch = dispatch.clone();
+            let current_val = current_val.clone();
             let session_store = session_store.clone();
             let error_state = error_state.clone();
             let Ok(e) = e.dyn_into::<ClipboardEvent>() else {
                 return;
             };
-            gloo::console::log!(&e);
             let Some(data) = e.clipboard_data() else {
                 return;
             };
@@ -55,7 +80,6 @@ pub fn editor(props: &InnerProps) -> Html {
             let Some(file) = files.get(0) else {
                 return;
             };
-            gloo::console::log!(&file);
             spawn_local(async move {
                 match Client::upload_img(
                     session_store
@@ -89,13 +113,16 @@ pub fn editor(props: &InnerProps) -> Html {
                             url,
                             &value.chars().skip(sel_end).collect::<String>()
                         );
-                        set_textarea_text(new_value);
-                        save_editor_state(store.clone(), dispatch.clone(), props.reskey.clone());
+                        set_textarea_text(new_value.as_str());
+                        if current_val.borrow().is_empty() {
+                            props.onmodifiedchanged.emit(true);
+                        }
+                        *current_val.borrow_mut() = new_value;
                     }
                     Err(e) => {
                         gloo::console::log!(e.to_string());
-                        if let ApiError::Endpoint(413, _) = e {
-                            show_error("File too large");
+                        if let ApiError::Endpoint(413, e) = e {
+                            show_error(e.to_string(), false);
                         } else {
                             error_state.set(Some(e))
                         }
@@ -104,20 +131,37 @@ pub fn editor(props: &InnerProps) -> Html {
             })
         })
     };
-    let oninput = Callback::from(move |e: InputEvent| {
-        let element: HtmlInputElement = e.target_unchecked_into();
-        set_textarea_height(&element);
-        save_editor_state(store.clone(), dispatch.clone(), props.reskey.clone());
-    });
-    handle_api_error!(error_state, session_dispatch);
+    let oninput = {
+        let last_mod_state = last_mod_state.clone();
+        Callback::from(move |e: InputEvent| {
+            let element: HtmlInputElement = e.target_unchecked_into();
+            let value = element.value();
+            let mut last_mod = last_mod_state.borrow_mut();
+            let changed = last_state.borrow().ne(&value);
+            if changed != *last_mod {
+                props.onmodifiedchanged.emit(changed);
+                *last_mod = changed;
+            }
+            *current_val.borrow_mut() = value;
+            set_textarea_height(&element);
+        })
+    };
+    handle_api_error!(error_state, session_dispatch, !*last_mod_state.borrow());
+    let (edit_class, display_class) = match props.preview {
+        true => ("hidden", "p-4 rounded-b-lg"),
+        false => ("flex flex-col grow", "hidden"),
+    };
     html! {
-        <div class={"flex flex-col grow"}>
+        <>
+        <div class={edit_class}>
             <textarea id={TEXTAREA_ID} {oninput} {onpaste} class={"flex grow font-mono bg-base-100 outline-none p-2 rounded-b-lg overflow-hidden resize-none leading-normal"}></textarea>
         </div>
+        <div class={display_class}><Markdown markdown={(*markdown).clone()} /></div>
+        </>
     }
 }
 
-fn save_editor_state(store: Rc<EditorStore>, dispatch: Dispatch<EditorStore>, reskey: Key) {
+pub fn save_editor_state(store: Rc<EditorStore>, dispatch: Dispatch<EditorStore>, reskey: Key) {
     if let Some(element) = web_sys::window()
         .unwrap()
         .document()
@@ -126,18 +170,16 @@ fn save_editor_state(store: Rc<EditorStore>, dispatch: Dispatch<EditorStore>, re
     {
         let element: HtmlInputElement = element.unchecked_into();
         let value = element.value();
-        if value == store.get_state(&reskey).unwrap().value.as_str() {
+        if Some(&value) == store.get_state(&reskey) {
             return;
         }
         dispatch.reduce_mut(|store| {
-            if let Some(s) = store.get_state_mut(&reskey) {
-                s.value = value;
-            }
+            store.add_or_update_state(&reskey, value);
         });
     }
 }
 
-fn set_textarea_text(value: String) {
+fn set_textarea_text(value: &str) {
     let element: HtmlInputElement = web_sys::window()
         .unwrap()
         .document()
@@ -145,7 +187,7 @@ fn set_textarea_text(value: String) {
         .get_element_by_id(TEXTAREA_ID)
         .unwrap()
         .unchecked_into();
-    element.set_value(value.as_str());
+    element.set_value(value);
     set_textarea_height(&element);
 }
 

@@ -3,6 +3,7 @@ Home: Home
 Projects: Projects
 About: About
 Contact: Contact
+Ok: Ok
 Cancel: Cancel
 Save: Save
 SaveChanges: Save Changes
@@ -31,6 +32,7 @@ ProjectsDescription: This is where I will put my projects.
 Edit: Edit
 Editor: Editor
 Preview: Preview
+SaveDraft: Save Draft
 # Errors
 E_Auth_MissingClaim: Authentication failed. Missing claim "%{0}".
 E_Auth_InvalidFormat: Authentication failed. Invalid calim format "%{0}".

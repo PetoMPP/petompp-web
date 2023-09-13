@@ -57,7 +57,7 @@ pub fn login() -> Html {
                 Err(error) => match error {
                     api::client::ApiError::Endpoint(_, message) => error_state.set(Some(message.into_localized(locales_store.clone()))),
                     api::client::ApiError::Parse(message) | api::client::ApiError::Network(message) => {
-                        show_error(message)
+                        show_error(message, true)
                     }
                 },
             }

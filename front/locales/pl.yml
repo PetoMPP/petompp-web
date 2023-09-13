@@ -3,6 +3,7 @@ Home: Strona główna
 Projects: Projekty
 About: O mnie
 Contact: Kontakt
+Ok: Ok
 Cancel: Anuluj
 Save: Zapisz
 SaveChanges: Zapisz zmiany
@@ -30,6 +31,7 @@ ProjectsDescription: Tutaj będę umieszczał swoje projekty.
 Edit: Edytuj
 Editor: Edytor
 Preview: Podgląd
+SaveDraft: Zapisz kopię roboczą
 # Errors
 E_Auth_MissingClaim: Uwierzytelnianie nie powiodło się. Brakujące roszczenie "%{0}".
 E_Auth_InvalidFormat: Uwierzytelnianie nie powiodło się. Nieprawidłowy format roszczenia "%{0}".
