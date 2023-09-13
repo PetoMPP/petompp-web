@@ -75,7 +75,7 @@ pub struct LoginResponse {
 
 impl Client {
     fn get_api_url(path: &str) -> String {
-            format!("{}{}", *API_URL, path)
+        format!("{}{}", *API_URL, path)
     }
 
     async fn send_json<R: DeserializeOwned>(

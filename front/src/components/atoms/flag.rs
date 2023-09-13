@@ -71,24 +71,21 @@ pub struct FlagSelectProps {
 
 #[function_component(FlagSelect)]
 pub fn flag_select(props: &FlagSelectProps) -> Html {
-    let country = use_state(|| props.country.clone());
     let get_onclick = |c: &Country| {
         let changed = props.onselectedchanged.clone();
-        let country = country.clone();
         let c = c.clone();
         Callback::from(move |_| {
-            country.set(c.clone());
             changed.as_ref().map(|cb| cb.emit(c.clone()));
         })
     };
     html! {
         <div class={"dropdown block w-12 h-8"}>
             <label tabindex={"0"}>
-            <Flag country={(*country).clone()} />
+            <Flag country={props.country} />
             </label>
             <ul tabindex={"0"} class={"dropdown-content flex w-12 h-8 z-[1]"}>
             { for Country::iter()
-                .filter(|c| c != &*country)
+                .filter(|c| c != &props.country)
                 .map(|country|
                     html! {
                         <li class={"flex"}>
