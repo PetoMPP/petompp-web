@@ -56,15 +56,14 @@ impl<T: DeserializeOwned> Response<T> {
 }
 
 pub struct Client;
-
 lazy_static::lazy_static! {
-    static ref BASE_URL: String = match std::env::var("API_URL").unwrap_or("http://127.0.0.1:16969".to_string()) {
-        url if url.ends_with('/') => url,
-        url => format!("{}/", url),
+    static ref API_URL: String = match std::option_env!("API_URL").unwrap_or_default() {
+        url if url.ends_with('/') => url.to_string(),
+        url => format!("{}/", url)
     };
-    static ref AZURE_STORAGE_URL: String = match std::env::var("AZURE_STORAGE_URL").expect("AZURE_STORAGE_URL must be set") {
-        url if url.ends_with('/') => url,
-        url => format!("{}/", url),
+    static ref AZURE_STORAGE_URL: String = match std::option_env!("AZURE_STORAGE_URL").unwrap_or_default() {
+        url if url.ends_with('/') => url.to_string(),
+        url => format!("{}/", url)
     };
 }
 
@@ -75,8 +74,8 @@ pub struct LoginResponse {
 }
 
 impl Client {
-    fn get_url(path: &str) -> String {
-        format!("{}{}", *BASE_URL, path)
+    fn get_api_url(path: &str) -> String {
+            format!("{}{}", *API_URL, path)
     }
 
     async fn send_json<R: DeserializeOwned>(
@@ -85,7 +84,7 @@ impl Client {
         token: Option<&str>,
         body: Option<&impl Serialize>,
     ) -> Result<R, ApiError> {
-        let mut request = Request::new(Self::get_url(path).as_str()).method(method);
+        let mut request = Request::new(Self::get_api_url(path).as_str()).method(method);
         if let Some(token) = token {
             request = request.header("Authorization", format!("Bearer {}", token).as_str());
         }
@@ -201,7 +200,7 @@ impl Client {
     }
 
     pub async fn upload_img(token: &str, img: web_sys::File) -> Result<String, ApiError> {
-        let resp = Request::new(Client::get_url("api/v1/img/").as_str())
+        let resp = Request::new(Self::get_api_url("api/v1/img/").as_str())
             .method(Method::PUT)
             .header("Authorization", format!("Bearer {}", token).as_str())
             .body(img)
@@ -209,9 +208,7 @@ impl Client {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
         match Response::<String>::from_response(resp).await? {
-            Response::Success(filename) => {
-                Ok(format!("{}{}", AZURE_STORAGE_URL.as_str(), filename))
-            }
+            Response::Success(filename) => Ok(format!("{}{}", *AZURE_STORAGE_URL, filename)),
             Response::Error(s, e) => Err(ApiError::Endpoint(s, e)),
         }
     }
