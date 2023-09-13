@@ -57,7 +57,7 @@ pub mod macros {
 
     #[macro_export]
     macro_rules! handle_api_error {
-        ($error:ident, $session_dispatch: ident) => {
+        ($error:ident, $session_dispatch: ident, $redirect: expr) => {
             use crate::components::atoms::modal::show_error;
             use crate::router::Route;
             use yew_router::prelude::*;
@@ -72,7 +72,7 @@ pub mod macros {
                     });
                     return html! { <Redirect<Route> to={Route::Login} />};
                 }
-                show_error(error.to_string());
+                show_error(error.to_string(), $redirect);
             }
         };
     }

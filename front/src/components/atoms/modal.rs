@@ -99,6 +99,8 @@ pub struct ErrorModalProps {
 
 pub const ERROR_MODAL_ID: &str = "error_modal";
 pub const ERROR_MODAL_MSG_ID: &str = "error_modal_msg";
+pub const ERROR_MODAL_BTN_ID: &str = "error_modal_btn";
+pub const ERROR_MODAL_REDIRECTING_BTN_ID: &str = "error_modal_redirecting_btn";
 
 #[function_component(ErrorModal)]
 pub fn error_modal() -> Html {
@@ -110,7 +112,8 @@ pub fn error_modal() -> Html {
             <h3 class={"font-bold text-lg"}>{"An error has occured!"}</h3>
             <p id={ERROR_MODAL_MSG_ID} class={"py-4"}></p>
             <div class={"flex flex-row-reverse justify-between"}>
-                <button class="btn btn-error" onclick={Callback::from(move |_| navigator.push(&Route::Home)).merge(get_error_close_callback())}>{"OK"}</button>
+                <button id={ERROR_MODAL_REDIRECTING_BTN_ID} class="btn btn-error" onclick={Callback::from(move |_| navigator.push(&Route::Home)).merge(get_error_close_callback())}>{"OK"}</button>
+                <button id={ERROR_MODAL_BTN_ID} class="btn btn-error hidden" onclick={get_error_close_callback()}>{"OK"}</button>
             </div>
         </form>
         </dialog>
@@ -118,7 +121,7 @@ pub fn error_modal() -> Html {
     }
 }
 
-pub fn show_error(msg: impl Into<String>) {
+pub fn show_error(msg: impl Into<String>, redirect: bool) {
     let msg: String = msg.into();
     let modal: HtmlDialogElement = web_sys::window()
         .unwrap()
@@ -135,6 +138,24 @@ pub fn show_error(msg: impl Into<String>) {
         .unwrap()
         .unchecked_into();
     msg_el.set_inner_text(msg.as_str());
+    let btn = web_sys::window()
+        .unwrap()
+        .document()
+        .unwrap()
+        .get_element_by_id(ERROR_MODAL_BTN_ID)
+        .unwrap();
+    let redirect_btn = web_sys::window()
+        .unwrap()
+        .document()
+        .unwrap()
+        .get_element_by_id(ERROR_MODAL_REDIRECTING_BTN_ID)
+        .unwrap();
+    let (btn_class, redirect_btn_class) = match redirect {
+        true => ("btn btn-error hidden", "btn btn-error"),
+        false => ("btn btn-error", "btn btn-error hidden"),
+    };
+    btn.set_attribute("class", btn_class).unwrap();
+    redirect_btn.set_attribute("class", redirect_btn_class).unwrap();
     modal.show_modal().unwrap();
 }
 

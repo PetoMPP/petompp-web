@@ -35,7 +35,7 @@ pub fn user_manager() -> Html {
             };
         })
     }
-    handle_api_error!(error_state, session_dispatch);
+    handle_api_error!(error_state, session_dispatch, true);
     html! {
         <table class={"table"}>
             <thead>
@@ -87,7 +87,7 @@ fn activate_button(props: &UserRowProps) -> Html {
             Err(error) => error_state.set(Some(error)),
         }
     });
-    handle_api_error!(error_state, session_dispatch);
+    handle_api_error!(error_state, session_dispatch, true);
     let (onclick, class) = match props.user.deleted_at.is_some() || props.user.confirmed {
         true => (
             None,
@@ -126,7 +126,7 @@ fn delete_button(props: &UserRowProps) -> Html {
             Err(error) => error_state.set(Some(error)),
         }
     });
-    handle_api_error!(error_state, session_dispatch);
+    handle_api_error!(error_state, session_dispatch, true);
     let (onclick, class) = match props.user.deleted_at.is_some() {
         true => (
             None,
