@@ -12,6 +12,7 @@ const ID: &str = "markdown-display";
 #[derive(Properties, PartialEq)]
 pub struct MarkdownDisplayProps {
     pub markdown: String,
+    pub allowhtml: bool,         // Allows HTML tags
     pub interactive: Option<()>, // Makes links clickable
 }
 
@@ -21,8 +22,11 @@ pub fn markdown_display(props: &MarkdownDisplayProps) -> Html {
     let html = markdown::to_html_with_options(
         props.markdown.as_str(),
         &markdown::Options {
+            compile: markdown::CompileOptions {
+                allow_dangerous_html: props.allowhtml,
+                ..markdown::CompileOptions::default()
+            },
             parse: markdown::ParseOptions::gfm(),
-            ..markdown::Options::default()
         },
     )
     .unwrap();

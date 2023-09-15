@@ -74,7 +74,7 @@ pub fn editable_page_base(props: &EditablePageBaseProps) -> Html {
     html! {
         <PageBase>
             <button class={edit_class} onclick={edit_onclick}>{locales_store.get(TK::Edit)}</button>
-            <Markdown {markdown} interactive={Some(())}/>
+            <Markdown {markdown} interactive={Some(())} allowhtml={true}/>
         </PageBase>
     }
 }
