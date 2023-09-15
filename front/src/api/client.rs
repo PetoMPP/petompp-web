@@ -199,8 +199,8 @@ impl Client {
             .map_err(|e| ApiError::Parse(e.to_string()))
     }
 
-    pub async fn upload_img(token: &str, img: web_sys::File) -> Result<String, ApiError> {
-        let resp = Request::new(Self::get_api_url("api/v1/img/").as_str())
+    pub async fn upload_img(token: &str, img: web_sys::File, folder: &str) -> Result<String, ApiError> {
+        let resp = Request::new(Self::get_api_url(format!("api/v1/img/?folder={}", folder).as_str()).as_str())
             .method(Method::PUT)
             .header("Authorization", format!("Bearer {}", token).as_str())
             .body(img)
@@ -208,7 +208,7 @@ impl Client {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
         match Response::<String>::from_response(resp).await? {
-            Response::Success(filename) => Ok(format!("{}{}", *AZURE_STORAGE_URL, filename)),
+            Response::Success(filename) => Ok(format!("{}{}/{}", *AZURE_STORAGE_URL, folder, filename)),
             Response::Error(s, e) => Err(ApiError::Endpoint(s, e)),
         }
     }
