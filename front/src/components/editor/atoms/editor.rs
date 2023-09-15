@@ -165,7 +165,7 @@ pub fn editor(props: &InnerEditProps) -> Html {
         <div class={edit_class}>
             <textarea id={TEXTAREA_ID} {oninput} {onpaste} class={"flex grow font-mono bg-base-100 outline-none p-2 rounded-b-lg overflow-hidden resize-none leading-normal"}></textarea>
         </div>
-        <div class={display_class}><Markdown markdown={(*markdown).clone()} /></div>
+        <div class={display_class}><Markdown markdown={(*markdown).clone()} allowhtml={true} /></div>
         </>
     }
 }
