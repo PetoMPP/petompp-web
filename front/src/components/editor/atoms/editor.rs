@@ -22,6 +22,7 @@ pub struct InnerEditProps {
 
 #[function_component(Editor)]
 pub fn editor(props: &InnerEditProps) -> Html {
+    const UPLOAD_FOLDER: &str = "editor";
     let props = props.clone();
     let error_state = use_state_eq(|| None);
     let current_val = use_mut_ref(|| String::new());
@@ -59,11 +60,15 @@ pub fn editor(props: &InnerEditProps) -> Html {
     );
 
     let onpaste = {
+        let last_state = last_state.clone();
+        let last_mod_state = last_mod_state.clone();
         let props = props.clone();
         let current_val = current_val.clone();
         let session_store = session_store.clone();
         let error_state = error_state.clone();
         Callback::from(move |e: Event| {
+            let last_state = last_state.clone();
+            let last_mod_state = last_mod_state.clone();
             let props = props.clone();
             let current_val = current_val.clone();
             let session_store = session_store.clone();
@@ -88,6 +93,7 @@ pub fn editor(props: &InnerEditProps) -> Html {
                         .map(|t| t.as_str())
                         .unwrap_or_default(),
                     file,
+                    UPLOAD_FOLDER,
                 )
                 .await
                 {
@@ -114,8 +120,11 @@ pub fn editor(props: &InnerEditProps) -> Html {
                             &value.chars().skip(sel_end).collect::<String>()
                         );
                         set_textarea_text(new_value.as_str());
-                        if current_val.borrow().is_empty() {
-                            props.onmodifiedchanged.emit(true);
+                        let mut last_mod = last_mod_state.borrow_mut();
+                        let changed = last_state.borrow().ne(&new_value);
+                        if changed != *last_mod {
+                            props.onmodifiedchanged.emit(changed);
+                            *last_mod = changed;
                         }
                         *current_val.borrow_mut() = new_value;
                     }
