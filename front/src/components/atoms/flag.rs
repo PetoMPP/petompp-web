@@ -59,7 +59,7 @@ impl TryFrom<String> for Country {
 #[function_component(Flag)]
 pub fn flag(props: &FlagProps) -> Html {
     html! {
-        <img src={format!("/img/flags/{}.svg", props.country.key())} class={"min-h-full min-w-full rounded-xl"} />
+        <img src={format!("/img/flags/{}.svg", props.country.key())} class={"w-12 h-8 rounded-xl"} />
     }
 }
 
@@ -79,19 +79,17 @@ pub fn flag_select(props: &FlagSelectProps) -> Html {
         })
     };
     html! {
-        <div class={"dropdown block w-12 h-8"}>
+        <div class={"dropdown block"}>
             <label tabindex={"0"}>
             <Flag country={props.country} />
             </label>
-            <ul tabindex={"0"} class={"dropdown-content flex w-12 h-8 z-[1]"}>
+            <ul tabindex={"0"} class={"dropdown-content flex z-[1]"}>
             { for Country::iter()
                 .filter(|c| c != &props.country)
                 .map(|country|
                     html! {
-                        <li class={"flex"}>
-                        <button class={"flex"} onclick={get_onclick(&country)}>
+                        <li class={"flex"} onclick={get_onclick(&country)}>
                             <Flag country={country.clone()} />
-                        </button>
                         </li>
                     }
                 )
