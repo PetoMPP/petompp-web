@@ -1,6 +1,9 @@
 use crate::{
     async_event,
-    components::atoms::modal::{show_modal_callback, Buttons, ModalButton, ModalData, ModalStore},
+    components::{
+        atoms::modal::{show_modal_callback, Buttons, ModalButton, ModalData, ModalStore},
+        organisms::menu::close_menu,
+    },
     data::{
         locales::{LocalesStore, TK},
         session::SessionStore,
@@ -36,7 +39,10 @@ pub fn user_box() -> Html {
 #[function_component(LoginButton)]
 fn login_button() -> Html {
     let navigator = use_navigator().unwrap();
-    let onclick = Callback::from(move |_| navigator.push(&Route::Login));
+    let onclick = Callback::from(move |_| {
+        close_menu();
+        navigator.push(&Route::Login);
+    });
     let style = "-webkit-mask: url(/img/ui/login.svg) no-repeat center;mask: url(/img/ui/login.svg) no-repeat center;";
     html! {
         <div class={"btn btn-secondary p-1"} {onclick}>
@@ -53,6 +59,7 @@ fn logout_button() -> Html {
     let navigator = use_navigator().unwrap();
     let style = "-webkit-mask: url(/img/ui/logout.svg) no-repeat center;mask: url(/img/ui/logout.svg) no-repeat center;";
     let onclick = async_event!(|session_dispatch, navigator| {
+        close_menu();
         session_dispatch.reduce(|_| SessionStore::default().into());
         navigator.push(&Route::Login);
     });
@@ -77,7 +84,10 @@ fn logout_button() -> Html {
 #[function_component(RegisterButton)]
 fn register_button() -> Html {
     let navigator = use_navigator().unwrap();
-    let onclick = Callback::from(move |_| navigator.push(&Route::Register));
+    let onclick = Callback::from(move |_| {
+        close_menu();
+        navigator.push(&Route::Register);
+    });
     let style = "-webkit-mask: url(/img/ui/register.svg) no-repeat center;mask: url(/img/ui/register.svg) no-repeat center;";
     html! {
         <div class={"btn btn-accent p-1"} {onclick}>
@@ -93,11 +103,15 @@ struct UserButtonProps {
 
 #[function_component(UserButton)]
 fn user_button(props: &UserButtonProps) -> Html {
-    let to = match props.user.role {
-        Role::Admin => Route::AdminPanelRoot,
-        _ => Route::Home,
+    let navigator = use_navigator().unwrap();
+    let onclick = match props.user.role {
+        Role::Admin => Some(Callback::from(move |_| {
+            close_menu();
+            navigator.push(&Route::AdminPanelRoot);
+        })),
+        _ => None,
     };
     html! {
-        <Link<Route> {to} classes={"btn btn-primary font-mono text-xl normal-case"}>{&props.user.name}</Link<Route>>
+        <a {onclick} class={"btn btn-primary font-mono text-xl normal-case"}>{&props.user.name}</a>
     }
 }

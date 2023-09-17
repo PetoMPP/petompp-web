@@ -19,7 +19,7 @@ pub fn user_management() -> Html {
     let (locales_store, _) = use_store::<LocalesStore>();
     html! {
         <PageBase>
-        <div class="flex flex-col lg:w-3/4 w-full m-auto">
+        <div class="flex flex-col lg:w-3/4 w-full mx-auto">
             <p class={"text-2xl font-bold font-mono mb-2"}>{locales_store.get(TK::UserManagement)}</p>
             <UserManager />
         </div>
