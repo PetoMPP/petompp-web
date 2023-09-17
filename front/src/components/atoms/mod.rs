@@ -3,5 +3,4 @@ pub mod link;
 pub mod logo;
 pub mod markdown;
 pub mod modal;
-pub mod navbar_item;
 pub mod text_input;
