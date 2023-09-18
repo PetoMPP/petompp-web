@@ -37,7 +37,7 @@ pub fn markdown_display(props: &MarkdownDisplayProps) -> Html {
         .create_element("div")
         .unwrap();
     div.set_inner_html(&html);
-    let interactive = props.interactive.clone();
+    let interactive = props.interactive;
     let class = match interactive {
         Some(()) => "prose w-full max-w-full",
         None => "prose w-full max-w-full pointer-events-none",
@@ -65,7 +65,7 @@ fn make_links_clickable(navigator: Navigator) {
             continue;
         };
         match href.as_str() {
-            ref x if x.starts_with('/') => match Route::recognize(x) {
+            p if p.starts_with('/') => match Route::recognize(p) {
                 Some(route) => {
                     let onclick = match route {
                         Route::AdminPanel => match AdminRoute::recognize(href.as_str()) {
@@ -83,7 +83,7 @@ fn make_links_clickable(navigator: Navigator) {
                 }
                 None => link.set_attribute("target", "_blank").unwrap(),
             },
-            ref x if x.starts_with("http") => link.set_attribute("target", "_blank").unwrap(),
+            p if p.starts_with("http") => link.set_attribute("target", "_blank").unwrap(),
             _ => continue,
         };
     }

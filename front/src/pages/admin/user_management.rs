@@ -14,7 +14,7 @@ use yewdux::prelude::*;
 pub fn user_management() -> Html {
     let (session_store, _) = use_store::<SessionStore>();
     let Some(Role::Admin) = session_store.as_ref().user.as_ref().map(|u| &u.role) else {
-        return html!{<NotFound />};
+        return html! {<NotFound />};
     };
     let (locales_store, _) = use_store::<LocalesStore>();
     html! {

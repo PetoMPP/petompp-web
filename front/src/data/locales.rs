@@ -1,4 +1,4 @@
-use crate::{api::error::PasswordRequirements, components::atoms::flag::Country};
+use crate::{api::error::validation::PasswordRequirements, components::atoms::flag::Country};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use strum::{EnumIter, IntoEnumIterator};
@@ -6,7 +6,7 @@ use wasm_bindgen::{prelude::Closure, JsCast};
 use yewdux::prelude::*;
 
 #[derive(PartialEq, Clone, Debug, Store, Serialize, Deserialize)]
-#[store(storage="local")]
+#[store(storage = "local")]
 pub struct LocalesStore {
     pub curr: Country,
     #[serde(skip_serializing, skip_deserializing)]
@@ -64,7 +64,7 @@ impl LocalesStore {
             TK::E_Validation_ResourceData_KeyMismatch(exp, act) => {
                 val.replace("%{0}", &exp).replace("%{1}", &act)
             }
-            TK::E_Validation_Password(pr) => pr.into_localized(&self),
+            TK::E_Validation_Password(pr) => pr.into_localized(self),
             _ => val,
         }
     }
