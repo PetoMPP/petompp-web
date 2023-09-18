@@ -1,6 +1,6 @@
+use crate::router::Route;
 use yew::prelude::*;
 use yew_router::prelude::*;
-use crate::router::Route;
 
 #[derive(PartialEq, Properties, Clone)]
 pub struct LinkProps {

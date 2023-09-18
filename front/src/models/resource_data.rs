@@ -1,4 +1,4 @@
-use crate::api::client::ApiError;
+use crate::api::client::RequestError;
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, Serialize, Deserialize, Clone)]
@@ -13,7 +13,7 @@ impl ResourceData {
         key: impl Into<String>,
         lang: &str,
         value: impl Into<String>,
-    ) -> Result<Self, ApiError> {
+    ) -> Result<Self, RequestError> {
         match lang {
             "en" => Ok(Self {
                 key: key.into(),
@@ -25,7 +25,7 @@ impl ResourceData {
                 en: None,
                 pl: Some(value.into()),
             }),
-            _ => Err(ApiError::Parse("Invalid language".into())),
+            _ => Err(RequestError::Parse("Invalid language".into())),
         }
     }
 }

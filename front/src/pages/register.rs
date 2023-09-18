@@ -1,7 +1,10 @@
-use crate::api::error::{Error as AppError, UsernameValidationError, ValidationError};
+use crate::api::error::{
+    validation::{Error as ValidationError, UsernameError},
+    ApiError as AppError,
+};
 use crate::components::atoms::text_input::TextInput;
 use crate::{
-    api::{self, client::ApiError},
+    api::{self, client::RequestError},
     async_event,
     components::atoms::modal::show_error,
     data::locales::{LocalesStore, TK},
@@ -32,7 +35,7 @@ impl Display for Error {
 
 #[function_component(Register)]
 pub fn register() -> Html {
-    let form_data = use_mut_ref(|| Credentials::default());
+    let form_data = use_mut_ref(Credentials::default);
     let error_state = use_state_eq(|| Option::None);
     let (locales_store, _) = use_store::<LocalesStore>();
     let history = use_navigator().unwrap();
@@ -57,20 +60,21 @@ pub fn register() -> Html {
     };
     let onsubmit = async_event!(
     [prevent SubmitEvent] |form_data, history, error_state, locales_store| {
-        match api::client::Client::register(form_data.borrow().clone()).await {
+            let creds = form_data.borrow().clone();
+            match api::client::Client::register(creds).await {
             Ok(()) => {
                 error_state.set(Option::None);
                 history.push(&Route::Login);
             },
             Err(error) => {
                 match error {
-                    ApiError::Endpoint(_, error) => {
+                    RequestError::Endpoint(_, error) => {
                         match &error {
                             AppError::UserNameTaken(_) => error_state.set(Some(Error::Username(error.into_localized(locales_store.clone())))),
                             AppError::ValidationError(ve) => match ve {
                                 ValidationError::Username(ue) => match ue {
-                                    UsernameValidationError::InvalidLength(_, _) |
-                                    UsernameValidationError::InvalidCharacters(_) => error_state.set(Some(Error::Username(error.into_localized(locales_store.clone())))),
+                                    UsernameError::InvalidLength(_, _) |
+                                    UsernameError::InvalidCharacters(_) => error_state.set(Some(Error::Username(error.into_localized(locales_store.clone())))),
                                 },
                                 ValidationError::Password(_) => error_state.set(Some(Error::Password(error.into_localized(locales_store.clone())))),
                                 _ => show_error(error.into_localized(locales_store.clone()), true),
@@ -78,7 +82,7 @@ pub fn register() -> Html {
                             _ => show_error(error.into_localized(locales_store.clone()), true),
                         }
                     }
-                    ApiError::Parse(error) | ApiError::Network(error) => {
+                    RequestError::Parse(error) | RequestError::Network(error) => {
                         show_error(error, true)
                     }
                 }

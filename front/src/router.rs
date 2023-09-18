@@ -2,11 +2,12 @@ use crate::pages::{
     about::About,
     admin::{admin_panel::AdminPanel, user_management::UserManagement},
     contact::Contact,
+    editor::Editor,
     home::Home,
     login::Login,
     not_found::NotFound,
     projects::Projects,
-    register::Register, editor::Editor,
+    register::Register,
 };
 use std::fmt::Display;
 use yew::prelude::*;

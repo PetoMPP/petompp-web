@@ -1,5 +1,5 @@
 use crate::{
-    api::client::{ApiError, Client},
+    api::client::{Client, RequestError},
     components::atoms::markdown::Markdown,
     data::{editor::EditorStore, resources::Key, session::SessionStore},
     handle_api_error,
@@ -25,10 +25,10 @@ pub fn editor(props: &InnerEditProps) -> Html {
     const UPLOAD_FOLDER: &str = "editor";
     let props = props.clone();
     let error_state = use_state_eq(|| None);
-    let current_val = use_mut_ref(|| String::new());
+    let current_val = use_mut_ref(String::new);
     let last_state = use_mut_ref(|| props.state.clone());
     let last_mod_state = use_mut_ref(|| false);
-    let markdown = use_state(|| String::new());
+    let markdown = use_state(String::new);
     let (session_store, session_dispatch) = use_store::<SessionStore>();
     use_effect_with_deps(
         move |(props, current_val, last_state, markdown, last_mod_state)| {
@@ -87,11 +87,7 @@ pub fn editor(props: &InnerEditProps) -> Html {
             };
             spawn_local(async move {
                 match Client::upload_img(
-                    session_store
-                        .token
-                        .as_ref()
-                        .map(|t| t.as_str())
-                        .unwrap_or_default(),
+                    session_store.token.as_deref().unwrap_or_default(),
                     file,
                     UPLOAD_FOLDER,
                 )
@@ -130,7 +126,7 @@ pub fn editor(props: &InnerEditProps) -> Html {
                     }
                     Err(e) => {
                         gloo::console::log!(e.to_string());
-                        if let ApiError::Endpoint(413, e) = e {
+                        if let RequestError::Endpoint(413, e) = e {
                             show_error(e.to_string(), false);
                         } else {
                             error_state.set(Some(e))
