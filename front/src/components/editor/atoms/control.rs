@@ -13,6 +13,8 @@ use crate::{
     },
     handle_api_error, use_effect_deps,
 };
+use wasm_bindgen::JsCast;
+use web_sys::HtmlElement;
 use yew::{platform::spawn_local, prelude::*};
 use yewdux::prelude::*;
 
@@ -171,6 +173,14 @@ pub fn key_select(props: &KeySelectProps) -> Html {
         let reskey = props.reskey.clone();
         let key = key.to_string();
         let onclick = Callback::from(move |_| {
+            if let Some(element) = web_sys::window()
+                .unwrap()
+                .document()
+                .unwrap()
+                .active_element()
+            {
+                element.unchecked_into::<HtmlElement>().blur().unwrap();
+            }
             navigator.push(&Route::Editor {
                 key: key.clone(),
                 lang: reskey.lang.clone(),
