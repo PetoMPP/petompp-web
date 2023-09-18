@@ -9,11 +9,11 @@ pub struct EditorProps {
     pub lang: String,
 }
 
-impl Into<Key> for EditorProps {
-    fn into(self) -> Key {
+impl From<EditorProps> for Key {
+    fn from(val: EditorProps) -> Self {
         Key {
-            reskey: self.reskey,
-            lang: self.lang,
+            reskey: val.reskey,
+            lang: val.lang,
         }
     }
 }

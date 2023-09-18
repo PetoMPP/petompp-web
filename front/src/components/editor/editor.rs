@@ -32,7 +32,7 @@ pub fn editor(props: &EditorProps) -> Html {
     let (locales_store, _) = use_store::<LocalesStore>();
     let error_state = use_state_eq(|| None);
     let preview = use_state_eq(|| false);
-    let state = use_state_eq(|| String::new());
+    let state = use_state_eq(String::new);
     let reskey = props.reskey.clone();
     use_effect_deps!(|state, reskey, store, error_state| {
         match store.get_state(&reskey) {

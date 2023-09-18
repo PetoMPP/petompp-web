@@ -19,7 +19,7 @@ pub fn user_manager() -> Html {
     let token = session_store.token.clone().unwrap_or_default();
     let error_state = use_state_eq(|| None);
     let reload = use_state_eq(|| true);
-    let user_data = use_state_eq(|| vec![]);
+    let user_data = use_state_eq(Vec::new);
     let mark_to_reload = {
         let reload = reload.clone();
         Callback::from(move |_| reload.set(true))

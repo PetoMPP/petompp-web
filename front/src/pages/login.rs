@@ -16,7 +16,7 @@ use yewdux::prelude::use_store;
 
 #[function_component(Login)]
 pub fn login() -> Html {
-    let form_data = use_mut_ref(|| Credentials::default());
+    let form_data = use_mut_ref(Credentials::default);
     let error_state = use_state_eq(|| Option::None);
     let history = use_navigator().unwrap();
     let (locales_store, _) = use_store::<LocalesStore>();
@@ -42,7 +42,8 @@ pub fn login() -> Html {
     };
     let onsubmit = async_event!(
         [prevent SubmitEvent] |form_data, error_state, history, session_dispatch, locales_store| {
-            match api::client::Client::login(form_data.borrow().clone()).await {
+            let creds = form_data.borrow().clone();
+            match api::client::Client::login(creds).await {
                 Ok(response) => {
                     session_dispatch.reduce(|_| {
                         SessionStore {
@@ -55,8 +56,8 @@ pub fn login() -> Html {
                     history.push(&Route::Home);
                 }
                 Err(error) => match error {
-                    api::client::ApiError::Endpoint(_, message) => error_state.set(Some(message.into_localized(locales_store.clone()))),
-                    api::client::ApiError::Parse(message) | api::client::ApiError::Network(message) => {
+                    api::client::RequestError::Endpoint(_, message) => error_state.set(Some(message.into_localized(locales_store.clone()))),
+                    api::client::RequestError::Parse(message) | api::client::RequestError::Network(message) => {
                         show_error(message, true)
                     }
                 },

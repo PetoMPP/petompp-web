@@ -75,7 +75,7 @@ pub struct FlagSelectProps {
 pub fn flag_select(props: &FlagSelectProps) -> Html {
     let get_onclick = |c: &Country| {
         let changed = props.onselectedchanged.clone();
-        let c = c.clone();
+        let c = *c;
         Callback::from(move |_| {
             if let Some(element) = web_sys::window()
                 .unwrap()
@@ -85,7 +85,9 @@ pub fn flag_select(props: &FlagSelectProps) -> Html {
             {
                 element.unchecked_into::<HtmlElement>().blur().unwrap();
             }
-            changed.as_ref().map(|cb| cb.emit(c.clone()));
+            if let Some(cb) = changed.as_ref() {
+                cb.emit(c)
+            }
         })
     };
     html! {
@@ -99,7 +101,7 @@ pub fn flag_select(props: &FlagSelectProps) -> Html {
                 .map(|country|
                     html! {
                         <li class={"flex"} onclick={get_onclick(&country)}>
-                            <Flag country={country.clone()} />
+                            <Flag {country} />
                         </li>
                     }
                 )

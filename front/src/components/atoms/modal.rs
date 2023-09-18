@@ -155,7 +155,9 @@ pub fn show_error(msg: impl Into<String>, redirect: bool) {
         false => ("btn btn-error", "btn btn-error hidden"),
     };
     btn.set_attribute("class", btn_class).unwrap();
-    redirect_btn.set_attribute("class", redirect_btn_class).unwrap();
+    redirect_btn
+        .set_attribute("class", redirect_btn_class)
+        .unwrap();
     modal.show_modal().unwrap();
 }
 

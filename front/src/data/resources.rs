@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
 use std::collections::HashMap;
+use std::fmt::Display;
 use yewdux::prelude::*;
 
 #[derive(Default, PartialEq, Clone, Debug, Serialize, Deserialize, Eq, Hash)]
